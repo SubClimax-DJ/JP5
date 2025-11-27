@@ -62,6 +62,18 @@
         .text-shadow-glow {
             text-shadow: 0 0 10px currentColor;
         }
+        /* Mysterious Max Special Style */
+        .max-card-glow {
+            animation: rainbow-border 2s linear infinite;
+        }
+        @keyframes rainbow-border {
+            0% { border-color: red; box-shadow: 0 0 10px red; }
+            20% { border-color: yellow; box-shadow: 0 0 10px yellow; }
+            40% { border-color: green; box-shadow: 0 0 10px green; }
+            60% { border-color: blue; box-shadow: 0 0 10px blue; }
+            80% { border-color: purple; box-shadow: 0 0 10px purple; }
+            100% { border-color: red; box-shadow: 0 0 10px red; }
+        }
     </style>
 </head>
 <body class="bg-gray-900 min-h-screen">
@@ -170,6 +182,16 @@
                         osc.start(now);
                         osc.stop(now + 0.3);
                         break;
+                    case 'legendary':
+                         // Mysterious Max Sound
+                        osc.type = 'square';
+                        osc.frequency.setValueAtTime(220, now);
+                        osc.frequency.linearRampToValueAtTime(880, now + 0.5);
+                        gain.gain.setValueAtTime(0.1, now);
+                        gain.gain.linearRampToValueAtTime(0, now + 1);
+                        osc.start(now);
+                        osc.stop(now + 1);
+                        break;
                 }
             }
         };
@@ -253,6 +275,12 @@
           { id: 'o6', title: 'Uncle Roger\'s Story', desc: 'It\'s the one about the fishing trip. It never ends.', effect: 'skip_turn', value: 1, flavor: 'Skip a turn falling asleep.' },
           { id: 'o7', title: 'Spilled Gravy', desc: 'Uncle Joe bumped the table!', effect: 'move_back', value: 4, flavor: 'Go back 4 spaces to clean it up.' },
           { id: 'o8', title: 'Black Friday Plan', desc: 'Aunt Theresa is dragging you shopping at 3 AM.', effect: 'skip_turn', value: 1, flavor: 'Skip turn waiting in line.' },
+          { id: 'o_zack', title: 'Elder Zack\'s Brawl', desc: 'He\'s fighting Uncle Guy on the lawn!', effect: 'move_back', value: 5, flavor: 'Everyone stops to watch. Go back 5.' },
+          { id: 'o_johnny', title: 'Johnny\'s Chaos', desc: 'He rigged the chair to break!', effect: 'move_back', value: 8, flavor: 'EXTRA BAD! Fall back 8 spaces.' },
+          { id: 'o_sam', title: 'Sam\'s Meltdown', desc: 'He screamed at the TV. It got awkward.', effect: 'move_back', value: 7, flavor: 'EXTRA BAD! Retreat 7 spaces in shame.' },
+          { id: 'o_trevor', title: 'Trevor\'s Prank', desc: 'Whoopee cushion on your seat.', effect: 'move_back', value: 2, flavor: 'Go back 2 spaces from embarrassment.' },
+          { id: 'o_kyle', title: 'Kyle\'s Dare', desc: 'He bet you couldn\'t eat a whole pie.', effect: 'skip_turn', value: 1, flavor: 'Skip a turn in a food coma.' },
+          { id: 'o_jeremy', title: 'Jeremy\'s Question', desc: 'He asked "So, when are you getting married?"', effect: 'move_back', value: 3, flavor: 'Emotional damage. Back 3.' },
         ];
 
         const DEFENSIVE_DECK = [
@@ -263,6 +291,10 @@
           { id: 'd5', title: 'Hidden Sandwich', desc: 'The Moistmaker!', effect: 'shield', value: 1, flavor: 'Immune to next bad effect.' },
           { id: 'd6', title: 'Football Nap', desc: 'Sleeping through the drama.', effect: 'move_forward', value: 2, flavor: 'Refreshed! Move 2 spaces.' },
           { id: 'd7', title: 'Secret Wine Stash', desc: 'Found in the pantry.', effect: 'move_forward', value: 4, flavor: 'Liquid courage! Move 4 spaces.' },
+          { id: 'd_chance', title: 'Chance the Kid', desc: 'He did something incredibly cute.', effect: 'shield', value: 1, flavor: 'Everyone is distracted. You are safe.' },
+          { id: 'd_austin', title: 'Austin\'s Speed', desc: 'He sprinted to the store for ice.', effect: 'move_forward', value: 5, flavor: 'The hero we needed. Forward 5.' },
+          { id: 'd_zane', title: 'Zane\'s Tech Support', desc: 'He fixed the Wi-Fi router.', effect: 'move_forward', value: 3, flavor: 'Everyone is happy. Forward 3.' },
+          { id: 'd_max', title: 'Mysterious Max', desc: 'The Legend. The Myth. The Best.', effect: 'max_mystery', value: 10, flavor: 'SPECIAL: Move 10 Spaces + Shield.' },
         ];
 
         const COOL_SHADES_CARD = { id: 'special_cc', title: 'Cool Shades', desc: 'Whatever, man. Nothing bothers you.', effect: 'shield', value: 1, flavor: 'Role Ability: Immune to next bad effect.' };
@@ -313,11 +345,13 @@
         };
 
         const Card = ({ card, onClick, isSelected }) => (
-          <div onClick={onClick} className={`relative w-36 h-52 rounded-xl shadow-lg p-3 flex flex-col justify-between cursor-pointer transition-all transform duration-200 shrink-0 ${isSelected ? 'ring-4 ring-yellow-400 scale-105 z-10 -translate-y-4' : 'hover:scale-105 hover:-translate-y-2'} ${OFFENSIVE_DECK.some(c => c.id === card.id) ? 'bg-gradient-to-br from-red-50 to-red-100 border-2 border-red-800' : card.id === 'special_cc' ? 'bg-gradient-to-br from-purple-50 to-purple-100 border-2 border-purple-800' : 'bg-gradient-to-br from-blue-50 to-blue-100 border-2 border-blue-800'}`}>
-            <div className={`text-xs font-black text-center uppercase tracking-widest mb-2 border-b-2 pb-1 ${OFFENSIVE_DECK.some(c => c.id === card.id) ? 'border-red-200 text-red-900' : card.id === 'special_cc' ? 'border-purple-200 text-purple-900' : 'border-blue-200 text-blue-900'}`}>{OFFENSIVE_DECK.some(c => c.id === card.id) ? '⚔️ Offense' : card.id === 'special_cc' ? '😎 Ability' : '🛡️ Defense'}</div>
+          <div onClick={onClick} className={`relative w-36 h-52 rounded-xl shadow-lg p-3 flex flex-col justify-between cursor-pointer transition-all transform duration-200 shrink-0 ${isSelected ? 'ring-4 ring-yellow-400 scale-105 z-10 -translate-y-4' : 'hover:scale-105 hover:-translate-y-2'} ${card.id === 'd_max' ? 'bg-gradient-to-br from-yellow-200 to-amber-400 border-4 border-yellow-600 max-card-glow' : OFFENSIVE_DECK.some(c => c.id === card.id) ? 'bg-gradient-to-br from-red-50 to-red-100 border-2 border-red-800' : card.id === 'special_cc' ? 'bg-gradient-to-br from-purple-50 to-purple-100 border-2 border-purple-800' : 'bg-gradient-to-br from-blue-50 to-blue-100 border-2 border-blue-800'}`}>
+            <div className={`text-xs font-black text-center uppercase tracking-widest mb-2 border-b-2 pb-1 ${card.id === 'd_max' ? 'border-yellow-700 text-yellow-900' : OFFENSIVE_DECK.some(c => c.id === card.id) ? 'border-red-200 text-red-900' : card.id === 'special_cc' ? 'border-purple-200 text-purple-900' : 'border-blue-200 text-blue-900'}`}>
+                {card.id === 'd_max' ? '🌟 LEGENDARY' : OFFENSIVE_DECK.some(c => c.id === card.id) ? '⚔️ Offense' : card.id === 'special_cc' ? '😎 Ability' : '🛡️ Defense'}
+            </div>
             <div className="text-sm font-extrabold leading-tight text-center text-gray-800">{card.title}</div>
             <div className="text-[11px] text-gray-600 text-center italic my-2 leading-tight">{card.desc}</div>
-            <div className={`mt-auto text-[10px] font-bold text-center rounded p-1.5 shadow-sm ${OFFENSIVE_DECK.some(c => c.id === card.id) ? 'bg-red-200 text-red-900' : card.id === 'special_cc' ? 'bg-purple-200 text-purple-900' : 'bg-blue-200 text-blue-900'}`}>{card.flavor}</div>
+            <div className={`mt-auto text-[10px] font-bold text-center rounded p-1.5 shadow-sm ${card.id === 'd_max' ? 'bg-yellow-100 text-yellow-900' : OFFENSIVE_DECK.some(c => c.id === card.id) ? 'bg-red-200 text-red-900' : card.id === 'special_cc' ? 'bg-purple-200 text-purple-900' : 'bg-blue-200 text-blue-900'}`}>{card.flavor}</div>
           </div>
         );
 
@@ -703,31 +737,59 @@
 
           const triggerRandomEvent = (player) => {
             playSound('alert');
-            const isGood = Math.random() > 0.5;
+            const roll = Math.random();
             let eventData = {};
-            if (isGood) {
-              eventData = {
-                type: 'saint', title: 'The Saint, Uncle Mike', desc: 'Uncle Mike showed up with extra stuffing!',
-                effect: () => {
-                  const newPlayers = [...players];
-                  const idx = newPlayers.findIndex(p => p.id === player.id);
-                  newPlayers[idx].pos = Math.min(BOARD_SIZE, newPlayers[idx].pos + 3);
-                  addLog(`😇 Uncle Mike moved ${player.name} forward 3 spaces!`);
-                  setPlayers(newPlayers);
-                }
-              };
+            
+            if (roll < 0.25) {
+                // Saint Mike (Good)
+                eventData = {
+                  type: 'saint', title: 'The Saint, Uncle Mike', desc: 'Uncle Mike showed up with extra stuffing!',
+                  effect: () => {
+                    const newPlayers = [...players];
+                    const idx = newPlayers.findIndex(p => p.id === player.id);
+                    newPlayers[idx].pos = Math.min(BOARD_SIZE, newPlayers[idx].pos + 3);
+                    addLog(`😇 Uncle Mike moved ${player.name} forward 3 spaces!`);
+                    setPlayers(newPlayers);
+                  }
+                };
+            } else if (roll < 0.5) {
+                // Bad Marty (Bad)
+                eventData = {
+                  type: 'bad', title: 'Bad Marty', desc: 'Bad Marty touched the TV remote!',
+                  effect: () => {
+                    const newPlayers = [...players];
+                    const idx = newPlayers.findIndex(p => p.id === player.id);
+                    newPlayers[idx].pos = Math.max(0, newPlayers[idx].pos - 3);
+                    addLog(`😈 Bad Marty pushed ${player.name} back 3 spaces!`);
+                    setPlayers(newPlayers);
+                  }
+                };
+            } else if (roll < 0.75) {
+                // Elder Zack Fight (New Bad)
+                 eventData = {
+                  type: 'bad', title: 'Zack & Guy Fight!', desc: 'Elder Zack and Uncle Guy are fighting on the lawn!',
+                  effect: () => {
+                    const newPlayers = [...players];
+                    const idx = newPlayers.findIndex(p => p.id === player.id);
+                    newPlayers[idx].pos = Math.max(0, newPlayers[idx].pos - 2);
+                    addLog(`🥊 Fight broke out! ${player.name} moved back 2 spaces to watch.`);
+                    setPlayers(newPlayers);
+                  }
+                };
             } else {
-              eventData = {
-                type: 'bad', title: 'Bad Marty', desc: 'Bad Marty touched the TV remote!',
-                effect: () => {
-                  const newPlayers = [...players];
-                  const idx = newPlayers.findIndex(p => p.id === player.id);
-                  newPlayers[idx].pos = Math.max(0, newPlayers[idx].pos - 3);
-                  addLog(`😈 Bad Marty pushed ${player.name} back 3 spaces!`);
-                  setPlayers(newPlayers);
-                }
-              };
+                 // Chance Find (New Good)
+                 eventData = {
+                  type: 'saint', title: 'Chance Found a Dollar', desc: 'Little Chance found money. It\'s a good omen.',
+                  effect: () => {
+                    const newPlayers = [...players];
+                    const idx = newPlayers.findIndex(p => p.id === player.id);
+                    newPlayers[idx].pos = Math.min(BOARD_SIZE, newPlayers[idx].pos + 2);
+                    addLog(`🍀 Chance's good luck moved ${player.name} forward 2 spaces!`);
+                    setPlayers(newPlayers);
+                  }
+                };
             }
+
             setActiveEvent(eventData);
             setPhase(GAME_PHASES.EVENT_TRIGGER);
           };
@@ -795,6 +857,12 @@
                     newPlayers[currentPlayerIdx].pos = target.pos;
                     newPlayers[targetId].pos = tempPos;
                     addLog(`${sourcePlayer.name} swapped places with ${target.name}!`);
+                    break;
+                  case 'max_mystery':
+                    playSound('legendary');
+                    target.pos = Math.min(BOARD_SIZE, target.pos + 10);
+                    target.shield = true;
+                    addLog(`✨ MYSTERIOUS MAX MIRACLE! ${target.name} moved 10 spaces and is Shielded!`);
                     break;
                 }
               }
