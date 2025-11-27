@@ -88,6 +88,10 @@
           { name: 'Blue', bg: 'bg-blue-500', text: 'text-blue-700', border: 'border-blue-600', ring: 'ring-blue-300', icon: '🏈' },
           { name: 'Green', bg: 'bg-green-500', text: 'text-green-700', border: 'border-green-600', ring: 'ring-green-300', icon: '🥧' },
           { name: 'Yellow', bg: 'bg-yellow-500', text: 'text-yellow-700', border: 'border-yellow-600', ring: 'ring-yellow-300', icon: '🎩' },
+          { name: 'Purple', bg: 'bg-purple-500', text: 'text-purple-700', border: 'border-purple-600', ring: 'ring-purple-300', icon: '🍇' },
+          { name: 'Orange', bg: 'bg-orange-500', text: 'text-orange-700', border: 'border-orange-600', ring: 'ring-orange-300', icon: '🌽' },
+          { name: 'Pink', bg: 'bg-pink-500', text: 'text-pink-700', border: 'border-pink-600', ring: 'ring-pink-300', icon: '🍷' },
+          { name: 'Teal', bg: 'bg-teal-500', text: 'text-teal-700', border: 'border-teal-600', ring: 'ring-teal-300', icon: '🍂' },
         ];
 
         const ROLES = {
@@ -245,8 +249,8 @@
         function PrebegSpanksGiving() {
           const [phase, setPhase] = useState(GAME_PHASES.SETUP_COUNT);
           const [playerCount, setPlayerCount] = useState(2);
-          const [playerNames, setPlayerNames] = useState(['', '', '', '']); 
-          const [playerRoles, setPlayerRoles] = useState(['cousin', 'glutton', 'tattle', 'fav']); 
+          const [playerNames, setPlayerNames] = useState(Array(8).fill('')); 
+          const [playerRoles, setPlayerRoles] = useState(Array(8).fill('cousin')); 
           const [players, setPlayers] = useState([]);
           const [currentPlayerIdx, setCurrentPlayerIdx] = useState(0);
           const [diceVal, setDiceVal] = useState(null);
@@ -271,11 +275,20 @@
           const initNameSetup = (count) => {
             playSound('click');
             setPlayerCount(count);
-            const defaults = Array.from({ length: 4 }).map((_, i) => `Player ${i + 1}`);
-            setPlayerNames(defaults);
+            const defaults = Array.from({ length: count }).map((_, i) => `Player ${i + 1}`);
+            setPlayerNames(prev => {
+                const newNames = [...prev];
+                defaults.forEach((name, i) => newNames[i] = name);
+                return newNames;
+            });
+            
             const roleKeys = Object.keys(ROLES);
-            const defaultRoles = Array.from({ length: 4 }).map((_, i) => roleKeys[i % roleKeys.length].toLowerCase());
-            setPlayerRoles(defaultRoles);
+            const defaultRoles = Array.from({ length: count }).map((_, i) => roleKeys[i % roleKeys.length].toLowerCase());
+            setPlayerRoles(prev => {
+                const newRoles = [...prev];
+                defaultRoles.forEach((role, i) => newRoles[i] = role);
+                return newRoles;
+            });
             setPhase(GAME_PHASES.SETUP_NAMES);
           };
 
@@ -294,7 +307,11 @@
           const finalizeSetup = () => {
             playSound('start');
             const newPlayers = Array.from({ length: playerCount }).map((_, i) => {
-              const roleKey = Object.keys(ROLES).find(key => ROLES[key].id === playerRoles[i]);
+              // Find role object more robustly (case-insensitive or direct match)
+              let roleKey = Object.keys(ROLES).find(key => ROLES[key].id === playerRoles[i]);
+              // Fallback if something went wrong with state sync
+              if (!roleKey) roleKey = Object.keys(ROLES)[0];
+              
               const roleData = ROLES[roleKey];
               const p = {
                 id: i,
@@ -841,11 +858,11 @@
                     <p className="text-lg md:text-xl text-gray-600 font-bold mb-1 italic">"A game of mishaps, sabotage, deceit and glory"</p>
                     <p className="text-sm md:text-md text-amber-700 font-bold mb-10 tracking-widest uppercase">Can you secure your Family Legacy!</p>
                     <h2 className="text-xl font-black text-gray-400 mb-4 uppercase tracking-widest">How many are eating?</h2>
-                    <div className="flex justify-center gap-4 md:gap-8 mb-8">
-                      {[2, 3, 4].map(num => (
-                        <button key={num} onClick={() => initNameSetup(num)} className="group relative w-20 h-20 md:w-24 md:h-24 rounded-2xl bg-gradient-to-br from-amber-400 to-amber-600 text-white font-black text-4xl shadow-xl transform transition hover:scale-110 hover:-translate-y-2 hover:shadow-orange-500/40 border-b-8 border-amber-800 active:border-b-0 active:translate-y-2">
+                    <div className="flex flex-wrap justify-center gap-4 mb-8">
+                      {[2, 3, 4, 5, 6, 7, 8].map(num => (
+                        <button key={num} onClick={() => initNameSetup(num)} className="group relative w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-gradient-to-br from-amber-400 to-amber-600 text-white font-black text-3xl shadow-xl transform transition hover:scale-110 hover:-translate-y-2 hover:shadow-orange-500/40 border-b-8 border-amber-800 active:border-b-0 active:translate-y-2">
                           <span className="drop-shadow-md">{num}</span>
-                          <span className="absolute -bottom-8 left-0 w-full text-center text-xs font-bold text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity uppercase">Players</span>
+                          <span className="absolute -bottom-6 left-0 w-full text-center text-[10px] font-bold text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity uppercase">Players</span>
                         </button>
                       ))}
                     </div>
@@ -882,7 +899,7 @@
                 {phase === GAME_PHASES.SETUP_NAMES && (
                   <div className="bg-white p-8 rounded-3xl shadow-xl max-w-2xl mx-auto mt-6 border-4 border-amber-200 animate-in slide-in-from-right-10 duration-300">
                     <h2 className="text-3xl font-black mb-8 text-amber-800 text-center flex items-center justify-center gap-3"><Edit2 className="w-8 h-8" /> Customize Family</h2>
-                    <div className="space-y-6 mb-8">
+                    <div className="space-y-4 mb-8 max-h-[60vh] overflow-y-auto pr-2 scrollbar-hide">
                       {Array.from({ length: playerCount }).map((_, i) => (
                         <div key={i} className="flex flex-col md:flex-row gap-4 items-center bg-gray-50 p-4 rounded-xl border border-gray-100">
                           <div className={`w-14 h-14 rounded-full flex items-center justify-center text-2xl shadow-lg transform rotate-3 ${COLORS[i].bg} text-white shrink-0 border-4 border-white ring-2 ${COLORS[i].ring}`}>{COLORS[i].icon}</div>
@@ -937,7 +954,7 @@
                        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
                          <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl animate-in zoom-in duration-200 border-4 border-amber-400">
                            <h3 className="text-xl font-black text-center mb-6 text-gray-800">Play <span className="text-amber-600 underline decoration-wavy">"{selectedCard.title}"</span> on whom?</h3>
-                           <div className="grid grid-cols-2 gap-4">
+                           <div className="grid grid-cols-2 gap-4 max-h-[50vh] overflow-y-auto p-2">
                              {players.map(p => (
                                <button key={p.id} onClick={() => executeCardEffect(p.id)} className={`p-4 rounded-xl border-2 transition-all ${p.color.border} ${p.color.bg} bg-opacity-10 hover:bg-opacity-30 hover:scale-105 flex flex-col items-center justify-center gap-2 font-bold text-gray-800`}>
                                  <span className="text-4xl filter drop-shadow-md">{p.icon}</span> <span>{p.name}</span>
