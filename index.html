@@ -30,36 +30,131 @@
             50% { transform: translateY(-10px); }
             100% { transform: translateY(0px); }
         }
+        .pattern-bg {
+            background-image: radial-gradient(#f59e0b 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
     </style>
 </head>
-<body class="bg-orange-50">
+<body class="bg-orange-50 pattern-bg min-h-screen">
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect, useRef } = React;
+        const { useState, useEffect, useRef, useMemo } = React;
+
+        // --- AUDIO ENGINE (Web Audio API) ---
+        const SoundEngine = {
+            ctx: null,
+            init: () => {
+                if (!SoundEngine.ctx) {
+                    SoundEngine.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (SoundEngine.ctx.state === 'suspended') {
+                    SoundEngine.ctx.resume();
+                }
+            },
+            play: (type) => {
+                SoundEngine.init();
+                const ctx = SoundEngine.ctx;
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+
+                const now = ctx.currentTime;
+
+                switch (type) {
+                    case 'click':
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(600, now);
+                        osc.frequency.exponentialRampToValueAtTime(300, now + 0.1);
+                        gain.gain.setValueAtTime(0.1, now);
+                        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                        osc.start(now);
+                        osc.stop(now + 0.1);
+                        break;
+                    case 'step':
+                        osc.type = 'triangle';
+                        osc.frequency.setValueAtTime(150, now);
+                        gain.gain.setValueAtTime(0.1, now);
+                        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                        osc.start(now);
+                        osc.stop(now + 0.1);
+                        break;
+                    case 'roll':
+                        // Simple noise burst simulation
+                        osc.type = 'square';
+                        osc.frequency.setValueAtTime(100, now);
+                        osc.frequency.linearRampToValueAtTime(800, now + 0.2);
+                        gain.gain.setValueAtTime(0.05, now);
+                        gain.gain.linearRampToValueAtTime(0, now + 0.2);
+                        osc.start(now);
+                        osc.stop(now + 0.2);
+                        break;
+                    case 'success':
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(400, now);
+                        osc.frequency.setValueAtTime(600, now + 0.1);
+                        gain.gain.setValueAtTime(0.1, now);
+                        gain.gain.linearRampToValueAtTime(0, now + 0.3);
+                        osc.start(now);
+                        osc.stop(now + 0.3);
+                        break;
+                    case 'fail':
+                        osc.type = 'sawtooth';
+                        osc.frequency.setValueAtTime(300, now);
+                        osc.frequency.linearRampToValueAtTime(100, now + 0.3);
+                        gain.gain.setValueAtTime(0.1, now);
+                        gain.gain.linearRampToValueAtTime(0, now + 0.3);
+                        osc.start(now);
+                        osc.stop(now + 0.3);
+                        break;
+                    case 'win':
+                        osc.type = 'triangle';
+                        // Arpeggio
+                        [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
+                            const osc2 = ctx.createOscillator();
+                            const gain2 = ctx.createGain();
+                            osc2.connect(gain2);
+                            gain2.connect(ctx.destination);
+                            osc2.frequency.value = freq;
+                            gain2.gain.setValueAtTime(0.05, now + i*0.1);
+                            gain2.gain.exponentialRampToValueAtTime(0.001, now + i*0.1 + 0.3);
+                            osc2.start(now + i*0.1);
+                            osc2.stop(now + i*0.1 + 0.3);
+                        });
+                        break;
+                    case 'alert':
+                        osc.type = 'sawtooth';
+                        osc.frequency.setValueAtTime(800, now);
+                        osc.frequency.setValueAtTime(400, now + 0.15);
+                        gain.gain.setValueAtTime(0.05, now);
+                        gain.gain.linearRampToValueAtTime(0, now + 0.3);
+                        osc.start(now);
+                        osc.stop(now + 0.3);
+                        break;
+                     case 'shield':
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(200, now);
+                        osc.frequency.linearRampToValueAtTime(800, now + 0.1);
+                        gain.gain.setValueAtTime(0.05, now);
+                        gain.gain.linearRampToValueAtTime(0, now + 0.3);
+                        osc.start(now);
+                        osc.stop(now + 0.3);
+                        break;
+                }
+            }
+        };
 
         // --- ICONS (SVG Components) ---
-        // Replacing lucide-react imports with inline SVGs for browser compatibility
         const Icon = ({ path, className = "w-6 h-6", ...props }) => (
-            <svg 
-                xmlns="http://www.w3.org/2000/svg" 
-                viewBox="0 0 24 24" 
-                fill="none" 
-                stroke="currentColor" 
-                strokeWidth="2" 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                className={className} 
-                {...props}
-            >
-                <path d={path} />
-            </svg>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} {...props}><path d={path} /></svg>
         );
 
+        // Reusing existing icons and adding new ones
         const Drumstick = (props) => <Icon path="M15.45 13.9 19 19l-1.6 2.4a2.9 2.9 0 0 1-4.8-.3L8.5 14.5a3.5 3.5 0 0 1-1.3-4.1l.8-2.6 1.8 1.8a2 2 0 0 0 2.8 0l1.1-1.1a2 2 0 0 0 0-2.8l-1.8-1.8 2.6-.8a3.5 3.5 0 0 1 4.1 1.3L21 8.5l-5.55 5.4Z" {...props} />;
         const Shield = (props) => <Icon path="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" {...props} />;
         const Skull = (props) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/><path d="M8 20v2h8v-2"/><path d="M12.5 17l-.5-1-.5 1h1z"/><path d="M16 20a2 2 0 0 0 1.56-3.25 8 8 0 1 0-11.12 0A2 2 0 0 0 8 20"/></svg>;
-        const PartyPopper = (props) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M5.8 11.3 2 22l10.7-3.79"/><path d="M4 3h.01"/><path d="M22 8h.01"/><path d="M15 2h.01"/><path d="M22 20h.01"/><path d="m22 2-2.24.75a2.9 2.9 0 0 0-1.96 3.12v0c.1.86-.57 1.63-1.45 1.63h-.38c-.86 0-1.6.6-1.76 1.44L14 10"/><path d="m22 13-.82-.33c-.86-.34-1.82.2-1.98 1.11v0c-.11.7-.72 1.22-1.43 1.22h-.73c-.91 0-1.68.65-1.81 1.55l-.03.22a2.95 2.95 0 0 0 .53 2.37l.81.93"/></svg>;
         const ArrowRight = (props) => <Icon path="M5 12h14M12 5l7 7-7 7" {...props} />;
         const Dna = (props) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M2 15c6.667-6 13.333 0 20-6"/><path d="M9 22c1.798-1.998 2.518-3.995 2.807-5.993"/><path d="M15 2c-1.798 1.998-2.518 3.995-2.807 5.993"/><path d="M17 12a5.002 5.002 0 0 0-3 7"/><path d="M12 12a5.002 5.002 0 0 0 4-3"/></svg>;
         const Utensils = (props) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg>;
@@ -76,10 +171,17 @@
         const Glasses = (props) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><circle cx="6" cy="15" r="4"/><circle cx="18" cy="15" r="4"/><path d="M14 15a2 2 0 0 0-2-2 2 2 0 0 0-2 2"/><path d="M2.5 13 5 7c.7-1.3 1.4-2 3-2"/><path d="M21.5 13 19 7c-.7-1.3-1.5-2-3.2-2"/></svg>;
         const BookOpen = (props) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>;
         const X = (props) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>;
+        
+        // New Icons for new roles
+        const ChefHat = (props) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M6 13.87A4 4 0 0 1 7.41 6a5.11 5.11 0 0 1 1.05-1.54 5 5 0 0 1 7.08 0A5.11 5.11 0 0 1 16.59 6 4 4 0 0 1 18 13.87V21H6Z"/><line x1="6" y1="17" x2="18" y2="17"/></svg>;
+        const Trophy = (props) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>;
+        const Cloud = (props) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M17.5 19c0-1.7-1.3-3-3-3-.4 0-.7.1-1 .3-.3-1.6-1.7-2.8-3.5-2.8-1.5 0-2.8.8-3.5 2h-.5c-1.7 0-3 1.3-3 3s1.3 3 3 3h11.5c1.7 0 3-1.3 3-3z"/></svg>;
+        const Bone = (props) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M17 10c.7-.7 1.69 0 2.5 0a2.5 2.5 0 1 0 0-5 .5.5 0 0 1-.5-.5 2.5 2.5 0 1 0-5 0c0 .81.7 1.8 0 2.5l-7 7c-.7.7-1.69 0-2.5 0a2.5 2.5 0 0 0 0 5c.28 0 .5.22.5.5a2.5 2.5 0 1 0 5 0c0-.81-.7-1.8 0-2.5Z"/></svg>;
+        const Hand = (props) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"/><path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2"/><path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></svg>;
 
         // --- GAME DATA & CONSTANTS ---
 
-        const BOARD_SIZE = 29; // 0 to 29 (30 spaces total)
+        const BOARD_SIZE = 29; 
         const GRID_COLS = 5; 
         const GRID_ROWS = 6;
 
@@ -95,19 +197,23 @@
         ];
 
         const ROLES = {
-          COUSIN: { id: 'cousin', name: 'Cool Cousin', desc: 'Starts with "Get Out of Jail" card.', icon: <Glasses className="w-4 h-4" /> },
-          GLUTTON: { id: 'glutton', name: 'The Glutton', desc: 'Immune to "Skip Turn" effects.', icon: <Pizza className="w-4 h-4" /> },
-          TATTLE: { id: 'tattle', name: 'The Tattletale', desc: 'Moves forward 3 spaces if others get caught cheating.', icon: <Megaphone className="w-4 h-4" /> },
-          FAV: { id: 'fav', name: 'Grandma\'s Fav', desc: 'Starts the game with a Shield.', icon: <Crown className="w-4 h-4" /> },
+          COUSIN: { id: 'cousin', name: 'Cool Cousin', desc: 'Starts with "Cool Shades".', icon: <Glasses className="w-4 h-4" /> },
+          GLUTTON: { id: 'glutton', name: 'The Glutton', desc: 'Immune to "Skip Turn".', icon: <Pizza className="w-4 h-4" /> },
+          TATTLE: { id: 'tattle', name: 'The Tattletale', desc: 'Moves forward if others cheat.', icon: <Megaphone className="w-4 h-4" /> },
+          FAV: { id: 'fav', name: 'Grandma\'s Fav', desc: 'Starts with a Shield.', icon: <Crown className="w-4 h-4" /> },
+          CHEF: { id: 'chef', name: 'The Chef', desc: 'Immune to Burnt Rolls/Food Cards.', icon: <ChefHat className="w-4 h-4" /> },
+          FAN: { id: 'fan', name: 'Football Fan', desc: 'Double bonus from Touchdowns.', icon: <Trophy className="w-4 h-4" /> },
+          SHEEP: { id: 'sheep', name: 'Black Sheep', desc: 'Your attacks push back extra.', icon: <Cloud className="w-4 h-4" /> },
+          DOG: { id: 'dog', name: 'The Dog', desc: 'A literal dog. Starts with Bone (Shield).', icon: <Bone className="w-4 h-4" /> },
         };
 
         const SPECIAL_TILES = {
-          3: { icon: '🥔', label: 'Mashed' },
-          7: { icon: '🍷', label: 'Cheers' },
-          12: { icon: '😴', label: 'Nap Time' },
-          18: { icon: '🏈', label: 'Touchdown' },
-          24: { icon: '🦴', label: 'Wishbone' },
-          28: { icon: '🥧', label: 'Dessert' },
+          3: { icon: '🥔', label: 'Mashed', desc: 'Stuck in potatoes! Go back 1.' },
+          7: { icon: '🍷', label: 'Cheers', desc: 'A toast! Nothing happens.' },
+          12: { icon: '😴', label: 'Nap Time', desc: 'Tryptophan hit! Skip next turn.' },
+          18: { icon: '🏈', label: 'Touchdown', desc: 'Score! Move forward 2 spaces.' },
+          24: { icon: '🦴', label: 'Wishbone', desc: 'Good luck! Roll two d4s next turn.' },
+          28: { icon: '🥧', label: 'Dessert', desc: 'Almost there!' },
         };
 
         const OFFENSIVE_DECK = [
@@ -142,19 +248,18 @@
           BATTLE: 'BATTLE', 
           EVENT_TRIGGER: 'EVENT_TRIGGER', 
           DRAW_CHOICE: 'DRAW_CHOICE',
+          TURN_TRANSITION: 'TURN_TRANSITION',
           GAME_OVER: 'GAME_OVER',
         };
 
         const playSound = (type) => {
-          // Placeholder for sounds
-          console.log(`🔊 Sound: ${type}`);
+            SoundEngine.play(type);
         };
 
         // --- COMPONENTS ---
 
         const Confetti = () => {
           const [particles, setParticles] = useState([]);
-          
           useEffect(() => {
             const colors = ['#fcd34d', '#ef4444', '#3b82f6', '#10b981', '#f97316'];
             const count = 100;
@@ -169,80 +274,29 @@
             }));
             setParticles(newParticles);
           }, []);
-
           return (
             <div className="fixed inset-0 pointer-events-none z-[60] overflow-hidden">
               {particles.map(p => (
-                <div 
-                  key={p.id}
-                  className="absolute w-3 h-3 rounded-sm"
-                  style={{
-                    left: `${p.x}%`,
-                    top: `-20px`,
-                    backgroundColor: p.color,
-                    animation: `fall ${p.duration}s linear ${p.delay}s infinite`,
-                    transform: `rotate(${p.rotation}deg)`
-                  }}
-                />
+                <div key={p.id} className="absolute w-3 h-3 rounded-sm" style={{ left: `${p.x}%`, top: `-20px`, backgroundColor: p.color, animation: `fall ${p.duration}s linear ${p.delay}s infinite`, transform: `rotate(${p.rotation}deg)` }} />
               ))}
-              <style jsx>{`
-                @keyframes fall {
-                  to { transform: translateY(110vh) rotate(720deg); }
-                }
-              `}</style>
+              <style jsx>{` @keyframes fall { to { transform: translateY(110vh) rotate(720deg); } } `}</style>
             </div>
           );
         };
 
         const Card = ({ card, onClick, isSelected }) => (
-          <div 
-            onClick={onClick}
-            className={`
-              relative w-36 h-52 rounded-xl shadow-lg p-3 flex flex-col justify-between cursor-pointer transition-all transform duration-200 shrink-0
-              ${isSelected ? 'ring-4 ring-yellow-400 scale-105 z-10 -translate-y-4' : 'hover:scale-105 hover:-translate-y-2'}
-              ${OFFENSIVE_DECK.some(c => c.id === card.id) 
-                ? 'bg-gradient-to-br from-red-50 to-red-100 border-2 border-red-800' 
-                : card.id === 'special_cc'
-                  ? 'bg-gradient-to-br from-purple-50 to-purple-100 border-2 border-purple-800'
-                  : 'bg-gradient-to-br from-blue-50 to-blue-100 border-2 border-blue-800'}
-            `}
-          >
-            <div className={`
-              text-xs font-black text-center uppercase tracking-widest mb-2 border-b-2 pb-1
-              ${OFFENSIVE_DECK.some(c => c.id === card.id) 
-                ? 'border-red-200 text-red-900' 
-                : card.id === 'special_cc'
-                   ? 'border-purple-200 text-purple-900'
-                   : 'border-blue-200 text-blue-900'}
-            `}>
-              {OFFENSIVE_DECK.some(c => c.id === card.id) ? '⚔️ Offense' : card.id === 'special_cc' ? '😎 Ability' : '🛡️ Defense'}
-            </div>
+          <div onClick={onClick} className={`relative w-36 h-52 rounded-xl shadow-lg p-3 flex flex-col justify-between cursor-pointer transition-all transform duration-200 shrink-0 ${isSelected ? 'ring-4 ring-yellow-400 scale-105 z-10 -translate-y-4' : 'hover:scale-105 hover:-translate-y-2'} ${OFFENSIVE_DECK.some(c => c.id === card.id) ? 'bg-gradient-to-br from-red-50 to-red-100 border-2 border-red-800' : card.id === 'special_cc' ? 'bg-gradient-to-br from-purple-50 to-purple-100 border-2 border-purple-800' : 'bg-gradient-to-br from-blue-50 to-blue-100 border-2 border-blue-800'}`}>
+            <div className={`text-xs font-black text-center uppercase tracking-widest mb-2 border-b-2 pb-1 ${OFFENSIVE_DECK.some(c => c.id === card.id) ? 'border-red-200 text-red-900' : card.id === 'special_cc' ? 'border-purple-200 text-purple-900' : 'border-blue-200 text-blue-900'}`}>{OFFENSIVE_DECK.some(c => c.id === card.id) ? '⚔️ Offense' : card.id === 'special_cc' ? '😎 Ability' : '🛡️ Defense'}</div>
             <div className="text-sm font-extrabold leading-tight text-center text-gray-800">{card.title}</div>
             <div className="text-[11px] text-gray-600 text-center italic my-2 leading-tight">{card.desc}</div>
-            <div className={`
-              mt-auto text-[10px] font-bold text-center rounded p-1.5 shadow-sm
-              ${OFFENSIVE_DECK.some(c => c.id === card.id) 
-                ? 'bg-red-200 text-red-900' 
-                : card.id === 'special_cc'
-                   ? 'bg-purple-200 text-purple-900'
-                   : 'bg-blue-200 text-blue-900'}
-            `}>
-              {card.flavor}
-            </div>
+            <div className={`mt-auto text-[10px] font-bold text-center rounded p-1.5 shadow-sm ${OFFENSIVE_DECK.some(c => c.id === card.id) ? 'bg-red-200 text-red-900' : card.id === 'special_cc' ? 'bg-purple-200 text-purple-900' : 'bg-blue-200 text-blue-900'}`}>{card.flavor}</div>
           </div>
         );
 
         const PlayerToken = ({ player, isActive }) => (
-          <div className={`
-            w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center text-lg md:text-2xl shadow-lg border-2 relative transition-all duration-300 z-10 bg-white
-            ${player.color.border} ${isActive ? 'ring-4 ring-white ring-offset-2 ring-offset-amber-200 scale-110 z-20' : ''}
-          `} title={`${player.name} (${player.role.name})`}>
+          <div className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center text-lg md:text-2xl shadow-lg border-2 relative transition-all duration-300 z-10 bg-white ${player.color.border} ${isActive ? 'ring-4 ring-white ring-offset-2 ring-offset-amber-200 scale-110 z-20' : ''}`} title={`${player.name} (${player.role.name})`}>
             {player.icon}
-            {player.shield && (
-              <div className="absolute -top-3 -right-3 bg-blue-600 text-white rounded-full p-0.5 w-5 h-5 flex items-center justify-center text-[10px] shadow border border-white">
-                🛡️
-              </div>
-            )}
+            {player.shield && (<div className="absolute -top-3 -right-3 bg-blue-600 text-white rounded-full p-0.5 w-5 h-5 flex items-center justify-center text-[10px] shadow border border-white">🛡️</div>)}
           </div>
         );
 
@@ -261,16 +315,11 @@
           const [showIntroVideo, setShowIntroVideo] = useState(true);
           const [activeEvent, setActiveEvent] = useState(null); 
           const [battleState, setBattleState] = useState(null); 
+          const [showRiggedModal, setShowRiggedModal] = useState(false);
 
           const logEndRef = useRef(null);
-
-          const addLog = (msg) => {
-            setLogs(prev => [...prev, msg]);
-          };
-
-          useEffect(() => {
-            logEndRef.current?.scrollIntoView({ behavior: "smooth" });
-          }, [logs]);
+          const addLog = (msg) => setLogs(prev => [...prev, msg]);
+          useEffect(() => { logEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [logs]);
 
           const initNameSetup = (count) => {
             playSound('click');
@@ -281,35 +330,15 @@
                 defaults.forEach((name, i) => newNames[i] = name);
                 return newNames;
             });
-            
             const roleKeys = Object.keys(ROLES);
-            const defaultRoles = Array.from({ length: count }).map((_, i) => roleKeys[i % roleKeys.length].toLowerCase());
-            setPlayerRoles(prev => {
-                const newRoles = [...prev];
-                defaultRoles.forEach((role, i) => newRoles[i] = role);
-                return newRoles;
-            });
+            setPlayerRoles(Array.from({ length: count }).map((_, i) => roleKeys[i % roleKeys.length].toLowerCase()));
             setPhase(GAME_PHASES.SETUP_NAMES);
           };
 
-          const handleNameChange = (index, value) => {
-            const newNames = [...playerNames];
-            newNames[index] = value;
-            setPlayerNames(newNames);
-          };
-
-          const handleRoleChange = (index, roleKey) => {
-            const newRoles = [...playerRoles];
-            newRoles[index] = roleKey;
-            setPlayerRoles(newRoles);
-          };
-
           const finalizeSetup = () => {
-            playSound('start');
+            playSound('success');
             const newPlayers = Array.from({ length: playerCount }).map((_, i) => {
-              // Find role object more robustly (case-insensitive or direct match)
               let roleKey = Object.keys(ROLES).find(key => ROLES[key].id === playerRoles[i]);
-              // Fallback if something went wrong with state sync
               if (!roleKey) roleKey = Object.keys(ROLES)[0];
               
               const roleData = ROLES[roleKey];
@@ -324,8 +353,9 @@
                 shield: false,
                 skipTurn: false,
                 doubleRoll: false,
+                usedRigged: false, // New Property
               };
-              if (roleData.id === 'fav') p.shield = true;
+              if (roleData.id === 'fav' || roleData.id === 'dog') p.shield = true;
               if (roleData.id === 'cousin') p.cards.push(COOL_SHADES_CARD);
               return p;
             });
@@ -362,9 +392,7 @@
             }
             setDiceVal(roll);
             addLog(msg);
-            setTimeout(() => {
-              animateMovement(currentPlayerIdx, roll);
-            }, 500);
+            setTimeout(() => { animateMovement(currentPlayerIdx, roll); }, 500);
           };
 
           const handleCheat = () => {
@@ -372,51 +400,62 @@
             playSound('click');
             const isSuccess = Math.random() > 0.8; 
             const player = players[currentPlayerIdx];
-            const reward = 5;
-            const penalty = 5;
-
             if (isSuccess) {
               playSound('success');
-              addLog(`🕵️‍♂️ SNEAKY! ${player.name} stole extra stuffing and nobody noticed!`);
-              addLog(`✨ Moving forward ${reward} spaces!`);
-              animateMovement(currentPlayerIdx, reward);
+              addLog(`🕵️‍♂️ ${player.name} cheated successfully! +5 spaces!`);
+              animateMovement(currentPlayerIdx, 5);
             } else {
               playSound('fail');
-              addLog(`👀 CAUGHT! ${player.name} tried to cheat! Grandma saw everything.`);
-              addLog(`👵 Grandma Ann: "Go sit at the card table!" (-${penalty} spaces)`);
-              
+              addLog(`👀 CAUGHT! Grandma sent ${player.name} back 5 spaces!`);
               const tattleTales = players.filter(p => p.id !== player.id && p.role.id === 'tattle');
               let bonusAnimations = [];
               if (tattleTales.length > 0) {
                 tattleTales.forEach(tt => {
-                   addLog(`📢 ${tt.name} (Tattletale) saw it! Moving forward 3 spaces!`);
+                   addLog(`📢 ${tt.name} (Tattletale) moves forward 3 spaces!`);
                    bonusAnimations.push(tt.id);
                 });
               }
-
-              animateMovement(currentPlayerIdx, -penalty, () => {
+              animateMovement(currentPlayerIdx, -5, () => {
                  if (bonusAnimations.length > 0) {
                    setPlayers(prev => {
                      const copy = [...prev];
-                     bonusAnimations.forEach(id => {
-                       copy[id].pos = Math.min(BOARD_SIZE, copy[id].pos + 3);
-                     });
+                     bonusAnimations.forEach(id => { copy[id].pos = Math.min(BOARD_SIZE, copy[id].pos + 3); });
                      return copy;
                    });
                    playSound('success');
                  }
-                 setTimeout(() => {
-                   endTurn();
-                 }, 1500);
+                 setTimeout(endTurn, 1500);
               });
             }
+          };
+
+          // RIGGED BUTTON LOGIC
+          const handleRiggedClick = () => {
+              playSound('fail'); 
+              setShowRiggedModal(true);
+          };
+
+          const resolveRigged = (pity) => {
+              const newPlayers = [...players];
+              const player = newPlayers[currentPlayerIdx];
+              player.usedRigged = true;
+              
+              if (pity) {
+                  playSound('success');
+                  player.pos = Math.min(BOARD_SIZE, player.pos + 3);
+                  addLog(`🍼 The family took pity on baby ${player.name}. +3 Spaces.`);
+              } else {
+                  playSound('fail');
+                  addLog(`❄️ No sympathy for ${player.name}. The family laughs.`);
+              }
+              setPlayers(newPlayers);
+              setShowRiggedModal(false);
           };
 
           const animateMovement = (pIdx, steps, onComplete = null) => {
             setPhase(GAME_PHASES.MOVING);
             let stepsRemaining = Math.abs(steps);
             const direction = steps > 0 ? 1 : -1;
-            
             const moveInterval = setInterval(() => {
               setPlayers(prevPlayers => {
                 const newPlayers = [...prevPlayers];
@@ -426,18 +465,13 @@
                 newPlayers[pIdx].pos = nextPos;
                 return newPlayers;
               });
-              
               playSound('step');
               stepsRemaining--;
-              
               if (stepsRemaining <= 0) {
                 clearInterval(moveInterval);
                 setTimeout(() => {
-                  if (onComplete) {
-                    onComplete();
-                  } else {
-                    handleMovementEnd(pIdx);
-                  }
+                  if (onComplete) onComplete();
+                  else handleMovementEnd(pIdx);
                 }, 300);
               }
             }, 300);
@@ -459,7 +493,46 @@
                 return;
               }
             }
-            checkPostMove(pIdx);
+            checkTileEffect(pIdx);
+          };
+
+          // --- NEW FUNCTION: TILE EFFECTS ---
+          const checkTileEffect = (pIdx) => {
+             const player = players[pIdx];
+             const tile = SPECIAL_TILES[player.pos];
+             
+             if (tile) {
+                const newPlayers = [...players];
+                const active = newPlayers[pIdx];
+
+                if (tile.label === 'Nap Time') {
+                    addLog(`😴 ${active.name} lands on Nap Time. Skip next turn!`);
+                    playSound('fail');
+                    active.skipTurn = true;
+                    setPlayers(newPlayers);
+                } else if (tile.label === 'Touchdown') {
+                    const bonus = active.role.id === 'fan' ? 4 : 2;
+                    addLog(`🏈 TOUCHDOWN! ${active.name} moves forward ${bonus} spaces!`);
+                    playSound('success');
+                    active.pos = Math.min(BOARD_SIZE, active.pos + bonus);
+                    setPlayers(newPlayers);
+                } else if (tile.label === 'Mashed') {
+                    addLog(`🥔 ${active.name} got stuck in mashed potatoes. Back 1 space.`);
+                    playSound('fail');
+                    active.pos = Math.max(0, active.pos - 1);
+                    setPlayers(newPlayers);
+                } else if (tile.label === 'Wishbone') {
+                    addLog(`🦴 ${active.name} found the Wishbone! Double roll next turn.`);
+                    playSound('shield');
+                    active.doubleRoll = true;
+                    setPlayers(newPlayers);
+                }
+             }
+             
+             // Continue to Post Move logic
+             setTimeout(() => {
+                checkPostMove(pIdx);
+             }, 800);
           };
 
           const checkPostMove = (pIdx) => {
@@ -468,7 +541,6 @@
               triggerRandomEvent(players[pIdx]);
             } else {
               setPhase(GAME_PHASES.DRAW_CHOICE);
-              addLog(`${players[pIdx].name}, choose a pile!`);
             }
           };
 
@@ -511,13 +583,14 @@
               const loserId = winner === attacker.id ? defender.id : attacker.id;
               const winnerName = winner === attacker.id ? attacker.name : defender.name;
               const loserName = winner === attacker.id ? defender.name : attacker.name;
-              addLog(`🏆 ${winnerName} won the battle! ${loserName} pushed back.`);
+              addLog(`🏆 ${winnerName} won! ${loserName} pushed back.`);
               const newPlayers = [...players];
               const loserIdx = newPlayers.findIndex(p => p.id === loserId);
               newPlayers[loserIdx].pos = Math.max(0, newPlayers[loserIdx].pos - 1);
               setPlayers(newPlayers);
               setBattleState(null);
-              checkPostMove(currentPlayerIdx);
+              // Winner logic check
+              checkTileEffect(currentPlayerIdx);
             }
           };
 
@@ -526,46 +599,23 @@
             const isGood = Math.random() > 0.5;
             if (isGood) {
               setActiveEvent({
-                type: 'saint',
-                title: 'The Saint, Uncle Mike',
-                desc: 'Uncle Mike showed up with extra stuffing! He blesses your turn.',
+                type: 'saint', title: 'The Saint, Uncle Mike', desc: 'Uncle Mike showed up with extra stuffing!',
                 effect: () => {
-                  const buff = Math.random() > 0.5 ? 'move' : 'shield';
                   const newPlayers = [...players];
                   const idx = newPlayers.findIndex(p => p.id === player.id);
-                  if (buff === 'move') {
-                    const steps = 3;
-                    newPlayers[idx].pos = Math.min(BOARD_SIZE, newPlayers[idx].pos + steps);
-                    addLog(`😇 Uncle Mike moved ${player.name} forward ${steps} spaces!`);
-                  } else {
-                    newPlayers[idx].shield = true;
-                    addLog(`😇 Uncle Mike gave ${player.name} a Shield!`);
-                  }
+                  newPlayers[idx].pos = Math.min(BOARD_SIZE, newPlayers[idx].pos + 3);
+                  addLog(`😇 Uncle Mike moved ${player.name} forward 3 spaces!`);
                   setPlayers(newPlayers);
                 }
               });
             } else {
               setActiveEvent({
-                type: 'bad',
-                title: 'Bad Marty',
-                desc: 'Bad Marty crashed the party! He touched the remote.',
+                type: 'bad', title: 'Bad Marty', desc: 'Bad Marty touched the TV remote!',
                 effect: () => {
-                  const debuff = Math.random() > 0.5 ? 'back' : 'discard';
                   const newPlayers = [...players];
                   const idx = newPlayers.findIndex(p => p.id === player.id);
-                  if (debuff === 'back') {
-                    const steps = 3;
-                    newPlayers[idx].pos = Math.max(0, newPlayers[idx].pos - steps);
-                    addLog(`😈 Bad Marty pushed ${player.name} back ${steps} spaces!`);
-                  } else {
-                    if (newPlayers[idx].cards.length > 0) {
-                      newPlayers[idx].cards.pop();
-                      addLog(`😈 Bad Marty stole a card from ${player.name}!`);
-                    } else {
-                      newPlayers[idx].pos = Math.max(0, newPlayers[idx].pos - 1); 
-                      addLog(`😈 Bad Marty pushed ${player.name} back 1 space!`);
-                    }
-                  }
+                  newPlayers[idx].pos = Math.max(0, newPlayers[idx].pos - 3);
+                  addLog(`😈 Bad Marty pushed ${player.name} back 3 spaces!`);
                   setPlayers(newPlayers);
                 }
               });
@@ -586,7 +636,7 @@
             const newPlayers = [...players];
             newPlayers[currentPlayerIdx].cards.push(randomCard);
             setPlayers(newPlayers);
-            addLog(`${newPlayers[currentPlayerIdx].name} drew a card from the ${type} pile.`);
+            addLog(`${newPlayers[currentPlayerIdx].name} drew a card.`);
             endTurn();
           };
 
@@ -612,14 +662,22 @@
 
             if (!blocked) {
               if (card.effect === 'skip_turn' && target.role.id === 'glutton') {
-                addLog(`🍗 ${target.name} (The Glutton) is immune to Skip Turn! Effect blocked.`);
+                addLog(`🍗 ${target.name} (The Glutton) is immune to Skip Turn!`);
+                playSound('fail');
+              } else if (card.id === 'o2' && target.role.id === 'chef') {
+                addLog(`👨‍🍳 ${target.name} (The Chef) fixed the Burnt Rolls! Immune.`);
                 playSound('fail');
               } else {
                 addLog(`🃏 ${sourcePlayer.name} played "${card.title}" on ${target.name}.`);
                 playSound('success');
                 switch (card.effect) {
                   case 'move_forward': target.pos = Math.min(BOARD_SIZE, target.pos + card.value); addLog(`${target.name} moved forward ${card.value} spaces.`); break;
-                  case 'move_back': target.pos = Math.max(0, target.pos - card.value); addLog(`${target.name} was pushed back ${card.value} spaces.`); break;
+                  case 'move_back': 
+                    let val = card.value;
+                    if (sourcePlayer.role.id === 'sheep') { val += 1; addLog(`🐑 Black Sheep bonus push! (+1)`); }
+                    target.pos = Math.max(0, target.pos - val); 
+                    addLog(`${target.name} was pushed back ${val} spaces.`); 
+                    break;
                   case 'skip_turn': target.skipTurn = true; addLog(`${target.name} will skip their next turn.`); break;
                   case 'shield': target.shield = true; addLog(`${target.name} is now shielded.`); break;
                   case 'double_roll': target.doubleRoll = true; addLog(`${target.name} will roll double next turn.`); break;
@@ -641,6 +699,7 @@
           const endTurn = () => {
             let nextIdx = (currentPlayerIdx + 1) % players.length;
             let checks = 0;
+            // Handle skipping turns logic
             while (players[nextIdx].skipTurn && checks < players.length) {
               addLog(`💤 ${players[nextIdx].name} is sleeping off the turkey (Skipped).`);
               const newPlayers = [...players];
@@ -650,9 +709,14 @@
               checks++;
             }
             setCurrentPlayerIdx(nextIdx);
-            setPhase(GAME_PHASES.START_TURN);
-            setDiceVal(null);
-            addLog(`👉 It is now ${players[nextIdx].name}'s turn.`);
+            setPhase(GAME_PHASES.TURN_TRANSITION); // New Interstitial Phase
+          };
+
+          const startNextTurn = () => {
+             playSound('success');
+             setPhase(GAME_PHASES.START_TURN);
+             addLog(`👉 It is now ${players[currentPlayerIdx].name}'s turn.`);
+             setDiceVal(null);
           };
 
           const getPathD = () => {
@@ -674,11 +738,7 @@
                for (let c = 0; c < GRID_COLS; c++) {
                   const visualIndex = r * GRID_COLS + c;
                   let logicalIndex = (r % 2 === 0) ? r * GRID_COLS + c : r * GRID_COLS + (GRID_COLS - 1 - c);
-
-                  if (logicalIndex > BOARD_SIZE) {
-                    gridCells.push(<div key={visualIndex} className="opacity-0"></div>);
-                    continue;
-                  }
+                  if (logicalIndex > BOARD_SIZE) { gridCells.push(<div key={visualIndex}></div>); continue; }
 
                   const occupants = players.filter(p => p.pos === logicalIndex);
                   const isStart = logicalIndex === 0;
@@ -686,48 +746,27 @@
                   const special = SPECIAL_TILES[logicalIndex];
 
                   let tileStyle = 'bg-white border-gray-300'; 
-                  let content = (
-                    <span className="absolute top-1 left-2 text-[10px] md:text-xs font-bold text-gray-400">
-                      {logicalIndex}
-                    </span>
-                  );
+                  let content = <span className="absolute top-1 left-2 text-[10px] md:text-xs font-bold text-gray-400">{logicalIndex}</span>;
 
                   if (isStart) {
                     tileStyle = 'bg-amber-100 border-amber-400 ring-4 ring-amber-200';
                     content = <span className="text-[10px] font-black text-amber-900 uppercase tracking-wider">Start</span>;
                   } else if (isEnd) {
                     tileStyle = 'bg-orange-600 border-orange-800 ring-4 ring-orange-400 text-white';
-                    content = (
-                      <div className="flex flex-col items-center">
-                        <Drumstick className="w-5 h-5 md:w-8 md:h-8 animate-pulse" />
-                        <span className="text-[9px] md:text-[10px] font-black uppercase">Feast!</span>
-                      </div>
-                    );
+                    content = <div className="flex flex-col items-center"><Drumstick className="w-5 h-5 md:w-8 md:h-8 animate-pulse" /><span className="text-[9px] font-black uppercase">Feast!</span></div>;
                   } else if (special) {
                     tileStyle = 'bg-amber-50 border-amber-200';
-                    content = (
-                        <>
-                          <span className="absolute top-1 left-2 text-[10px] md:text-xs font-bold text-amber-800/50">{logicalIndex}</span>
-                          <div className="flex flex-col items-center opacity-80 mt-1">
-                            <span className="text-lg md:text-2xl">{special.icon}</span>
-                            <span className="text-[8px] md:text-[9px] font-bold text-amber-900 leading-none uppercase">{special.label}</span>
-                          </div>
-                        </>
-                    );
+                    content = <><span className="absolute top-1 left-2 text-[10px] md:text-xs font-bold text-amber-800/50">{logicalIndex}</span><div className="flex flex-col items-center opacity-80 mt-1"><span className="text-lg md:text-2xl">{special.icon}</span><span className="text-[8px] md:text-[9px] font-bold text-amber-900 leading-none uppercase">{special.label}</span></div></>;
                   }
 
                   gridCells.push(
-                    <div key={visualIndex} className={`
-                      relative w-full aspect-square rounded-full flex flex-col items-center justify-center shadow-md transition-all z-10
-                      border-4 ${tileStyle}
-                      ${isEnd ? 'shadow-orange-500/50' : 'shadow-black/10'}
-                    `}>
-                      {!isEnd && !isStart && <div className="absolute inset-1 rounded-full border-2 border-gray-100 pointer-events-none"></div>}
+                    <div key={visualIndex} className={`relative w-full aspect-square rounded-full flex flex-col items-center justify-center shadow-md transition-all z-10 border-4 ${tileStyle} ${isEnd ? 'shadow-orange-500/50' : 'shadow-black/10'}`}>
                       {content}
-                      
                       <div className="absolute inset-0 flex flex-wrap justify-center items-center gap-0.5 p-1 pointer-events-none z-10">
-                        {occupants.map(p => (
-                          <PlayerToken key={p.id} player={p} isActive={currentPlayerIdx === p.id} />
+                        {occupants.map((p, i) => (
+                          <div key={p.id} className="absolute transition-all duration-500" style={{ left: '50%', top: '50%', transform: `translate(-50%, -50%) translate(${(i%2)*10}px, ${Math.floor(i/2)*-10}px)`, zIndex: 20+i }}>
+                              <PlayerToken player={p} isActive={currentPlayerIdx === p.id} />
+                          </div>
                         ))}
                       </div>
                     </div>
@@ -737,81 +776,9 @@
             return gridCells;
           };
 
-          const renderBattleModal = () => {
-            if (!battleState) return null;
-            const { attacker, defender, step, p1Choice, p2Choice, winner } = battleState;
-
-            return (
-              <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                <div className="bg-white rounded-3xl p-6 md:p-10 max-w-2xl w-full shadow-2xl border-8 border-red-600 animate-in zoom-in duration-200 flex flex-col items-center text-center">
-                  <div className="flex items-center gap-4 mb-6">
-                    <Swords className="w-16 h-16 text-red-600 animate-pulse" />
-                    <h2 className="text-4xl md:text-5xl font-black uppercase text-red-800 tracking-tighter">BATTLE!</h2>
-                    <Swords className="w-16 h-16 text-red-600 animate-pulse transform scale-x-[-1]" />
-                  </div>
-                  {step === 'INTRO' && (
-                    <>
-                      <div className="text-2xl font-bold mb-8">
-                        <span className={attacker.color.text}>{attacker.name}</span> <span className="text-gray-400 text-sm">vs</span> <span className={defender.color.text}>{defender.name}</span>
-                      </div>
-                      <p className="text-gray-600 mb-8 font-medium">Winner stays. Loser moves back 1 space.</p>
-                      <button onClick={() => setBattleState(prev => ({...prev, step: 'P1'}))} className="bg-red-600 text-white px-8 py-4 rounded-xl font-black text-xl hover:scale-105 transition-transform">Start Battle!</button>
-                    </>
-                  )}
-                  {step === 'P1' && (
-                    <>
-                      <h3 className="text-3xl font-bold mb-2 text-gray-800">{attacker.name}'s Choice</h3>
-                      <p className="bg-yellow-100 text-yellow-800 px-4 py-2 rounded-lg font-bold mb-8 animate-bounce border border-yellow-300">⚠️ {defender.name}, LOOK AWAY NOW!</p>
-                      <div className="flex gap-4">
-                        {['rock', 'paper', 'scissors'].map(c => (
-                          <button key={c} onClick={() => handleBattleChoice(c)} className="w-24 h-24 md:w-32 md:h-32 bg-gray-100 rounded-xl text-5xl md:text-6xl hover:bg-red-100 border-4 border-gray-200 hover:border-red-400 transition-all transform hover:-translate-y-2">{c === 'rock' ? '🪨' : c === 'paper' ? '📄' : '✂️'}</button>
-                        ))}
-                      </div>
-                    </>
-                  )}
-                  {step === 'SWITCH' && (
-                    <>
-                      <div className="text-6xl mb-4">🙈</div>
-                      <h3 className="text-2xl font-bold mb-4">Switch Players!</h3>
-                      <p className="text-gray-600 mb-8">Okay <span className="font-bold">{attacker.name}</span>, your choice is locked.<br/>Please hand the device to <span className="font-bold">{defender.name}</span>.</p>
-                      <button onClick={() => setBattleState(prev => ({...prev, step: 'P2'}))} className="bg-blue-600 text-white px-8 py-4 rounded-xl font-black text-xl hover:scale-105 transition-transform">I am {defender.name}</button>
-                    </>
-                  )}
-                  {step === 'P2' && (
-                    <>
-                      <h3 className="text-3xl font-bold mb-2 text-gray-800">{defender.name}'s Choice</h3>
-                       <p className="bg-yellow-100 text-yellow-800 px-4 py-2 rounded-lg font-bold mb-8 animate-bounce border border-yellow-300">⚠️ {attacker.name}, LOOK AWAY NOW!</p>
-                      <div className="flex gap-4">
-                        {['rock', 'paper', 'scissors'].map(c => (
-                          <button key={c} onClick={() => handleBattleChoice(c)} className="w-24 h-24 md:w-32 md:h-32 bg-gray-100 rounded-xl text-5xl md:text-6xl hover:bg-blue-100 border-4 border-gray-200 hover:border-blue-400 transition-all transform hover:-translate-y-2">{c === 'rock' ? '🪨' : c === 'paper' ? '📄' : '✂️'}</button>
-                        ))}
-                      </div>
-                    </>
-                  )}
-                  {step === 'RESULT' && (
-                    <>
-                      <h3 className="text-3xl font-black mb-8 text-gray-800">RESULT</h3>
-                      <div className="flex justify-center items-center gap-8 mb-8">
-                         <div className="text-center">
-                            <div className="text-sm font-bold text-gray-400 mb-2">{attacker.name}</div>
-                            <div className="text-6xl p-4 bg-gray-50 rounded-xl border-2 border-gray-200">{p1Choice === 'rock' ? '🪨' : p1Choice === 'paper' ? '📄' : '✂️'}</div>
-                         </div>
-                         <div className="text-2xl font-black text-red-300">VS</div>
-                         <div className="text-center">
-                            <div className="text-sm font-bold text-gray-400 mb-2">{defender.name}</div>
-                            <div className="text-6xl p-4 bg-gray-50 rounded-xl border-2 border-gray-200">{p2Choice === 'rock' ? '🪨' : p2Choice === 'paper' ? '📄' : '✂️'}</div>
-                         </div>
-                      </div>
-                      <div className="text-2xl font-bold mb-8">
-                         {winner === 'tie' ? <span className="text-orange-500">IT'S A TIE! GO AGAIN!</span> : <span><span className={winner === attacker.id ? attacker.color.text : defender.color.text}>{winner === attacker.id ? attacker.name : defender.name}</span> WINS!</span>}
-                      </div>
-                      <button onClick={finalizeBattle} className="bg-gray-900 text-white px-8 py-4 rounded-xl font-black text-xl hover:bg-black transition-colors w-full">{winner === 'tie' ? 'Rematch' : 'Continue'}</button>
-                    </>
-                  )}
-                </div>
-              </div>
-            );
-          };
+          const minPos = players.length > 0 ? Math.min(...players.map(p => p.pos)) : 0;
+          const isLastPlace = players.length > 0 && players[currentPlayerIdx].pos === minPos; 
+          const canUseRigged = phase === GAME_PHASES.START_TURN && isLastPlace && !players[currentPlayerIdx].usedRigged;
 
           return (
             <div className="min-h-screen bg-orange-50 font-sans text-gray-900 select-none pb-20">
@@ -823,12 +790,49 @@
                   <div className="w-full max-w-3xl aspect-video bg-black shadow-2xl rounded-xl overflow-hidden border-4 border-amber-500 relative">
                      <iframe width="100%" height="100%" src="https://www.youtube.com/embed/NtMmpMSfA5I?autoplay=1" title="Prebeg Spanks-Giving Intro" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe>
                   </div>
-                  <button onClick={() => setShowIntroVideo(false)} className="mt-8 bg-gradient-to-r from-red-600 to-orange-600 text-white font-black text-2xl py-4 px-12 rounded-full shadow-lg hover:scale-105 transition-transform flex items-center gap-2">🍗 LET'S FEAST! (Skip Video)</button>
+                  <button onClick={() => { setShowIntroVideo(false); SoundEngine.init(); }} className="mt-8 bg-gradient-to-r from-red-600 to-orange-600 text-white font-black text-2xl py-4 px-12 rounded-full shadow-lg hover:scale-105 transition-transform flex items-center gap-2">🍗 LET'S FEAST! (Skip Video)</button>
                 </div>
               )}
 
-              {/* HEADER */}
-              <header className="bg-amber-900 text-orange-50 p-4 shadow-lg sticky top-0 z-50 border-b-4 border-amber-700">
+              {/* RIGGED MODAL */}
+              {showRiggedModal && (
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
+                    <div className="bg-pink-100 rounded-3xl p-8 max-w-lg w-full shadow-2xl border-8 border-pink-400 text-center animate-in zoom-in relative">
+                         <div className="absolute -top-10 left-1/2 -translate-x-1/2 text-8xl">👶</div>
+                         <h2 className="text-3xl font-black text-pink-600 mt-8 mb-4">Awww, is {players[currentPlayerIdx].name} sad?</h2>
+                         <p className="text-xl font-bold text-gray-700 mb-6">"This game is rigged! It's not fair! I hate you all!"</p>
+                         <div className="bg-white p-4 rounded-xl border-2 border-pink-200 mb-6">
+                            <p className="text-sm font-bold text-gray-500 uppercase mb-2">To the rest of the family:</p>
+                            <p className="text-lg font-bold text-gray-800">Do we give this big baby some sympathy points?</p>
+                         </div>
+                         <div className="grid grid-cols-2 gap-4">
+                            <button onClick={() => resolveRigged(true)} className="bg-green-500 text-white py-4 rounded-xl font-black text-lg shadow hover:scale-105 transition-transform">Yes (Pity +3)</button>
+                            <button onClick={() => resolveRigged(false)} className="bg-red-600 text-white py-4 rounded-xl font-black text-lg shadow hover:scale-105 transition-transform">NO! (Suffer)</button>
+                         </div>
+                    </div>
+                </div>
+              )}
+
+              {/* TURN TRANSITION / CURTAIN */}
+              {phase === GAME_PHASES.TURN_TRANSITION && (
+                 <div className="fixed inset-0 bg-orange-900/95 z-50 flex flex-col items-center justify-center p-6 text-center animate-in fade-in">
+                    <div className="mb-6"><Hand className="w-24 h-24 text-orange-200 animate-pulse" /></div>
+                    <h2 className="text-4xl md:text-6xl font-black text-white mb-2 uppercase tracking-tighter">Pass The Device</h2>
+                    <p className="text-xl text-orange-200 mb-8 font-bold">Don't let {players[(currentPlayerIdx + players.length - 1) % players.length].name} see!</p>
+                    <div className="bg-white/10 p-6 rounded-2xl backdrop-blur-sm border-2 border-white/20 mb-8">
+                       <p className="text-orange-100 text-sm font-bold uppercase mb-2">Next Up</p>
+                       <div className="flex items-center justify-center gap-4 text-4xl text-white font-black">
+                          <span className="text-6xl">{players[currentPlayerIdx].icon}</span>
+                          {players[currentPlayerIdx].name}
+                       </div>
+                    </div>
+                    <button onClick={startNextTurn} className="bg-white text-orange-900 px-12 py-5 rounded-full font-black text-2xl shadow-2xl hover:scale-105 transition-transform flex items-center gap-2">
+                        I am {players[currentPlayerIdx].name} <ArrowRight className="w-6 h-6" />
+                    </button>
+                 </div>
+              )}
+
+              <header className="bg-amber-900 text-orange-50 p-4 shadow-lg sticky top-0 z-40 border-b-4 border-amber-700">
                 <div className="max-w-5xl mx-auto flex justify-between items-center">
                   <h1 className="text-xl md:text-3xl font-black tracking-wide uppercase flex items-center gap-2">
                     <Drumstick className="w-6 h-6 md:w-8 md:h-8 text-orange-400" /> <span className="hidden md:inline">Prebeg Spanks-Giving</span><span className="md:hidden">Spanks-Giving</span>
@@ -842,126 +846,122 @@
                 </div>
               </header>
 
-              {/* MAIN CONTENT */}
               <main className="max-w-6xl mx-auto p-4 flex flex-col gap-6">
-                
-                {/* SETUP: COUNT */}
                 {phase === GAME_PHASES.SETUP_COUNT && (
                   <div className="bg-white p-8 md:p-12 rounded-3xl shadow-2xl text-center max-w-2xl mx-auto mt-6 border-8 border-amber-200 animate-in zoom-in-95 duration-500">
-                    <div className="flex justify-center mb-6">
-                       <div className="relative">
-                         <Drumstick className="w-24 h-24 md:w-32 md:h-32 text-orange-500 animate-bounce drop-shadow-lg" />
-                         <div className="absolute -bottom-2 w-full h-4 bg-black/10 rounded-full blur-md animate-pulse"></div>
-                       </div>
-                    </div>
-                    <h1 className="text-4xl md:text-6xl font-black mb-2 text-amber-900 tracking-tighter leading-tight uppercase">Prebeg<br/><span className="text-orange-600">Spanks-Giving</span></h1>
-                    <p className="text-lg md:text-xl text-gray-600 font-bold mb-1 italic">"A game of mishaps, sabotage, deceit and glory"</p>
-                    <p className="text-sm md:text-md text-amber-700 font-bold mb-10 tracking-widest uppercase">Can you secure your Family Legacy!</p>
+                    <div className="flex justify-center mb-6"><Drumstick className="w-24 h-24 text-orange-500 animate-bounce" /></div>
+                    <h1 className="text-4xl md:text-6xl font-black mb-2 text-amber-900 uppercase">Prebeg<br/><span className="text-orange-600">Spanks-Giving</span></h1>
+                    <p className="text-sm md:text-md text-amber-700 font-bold mb-10 tracking-widest uppercase">Secure your Legacy!</p>
                     <h2 className="text-xl font-black text-gray-400 mb-4 uppercase tracking-widest">How many are eating?</h2>
                     <div className="flex flex-wrap justify-center gap-4 mb-8">
                       {[2, 3, 4, 5, 6, 7, 8].map(num => (
-                        <button key={num} onClick={() => initNameSetup(num)} className="group relative w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-gradient-to-br from-amber-400 to-amber-600 text-white font-black text-3xl shadow-xl transform transition hover:scale-110 hover:-translate-y-2 hover:shadow-orange-500/40 border-b-8 border-amber-800 active:border-b-0 active:translate-y-2">
-                          <span className="drop-shadow-md">{num}</span>
-                          <span className="absolute -bottom-6 left-0 w-full text-center text-[10px] font-bold text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity uppercase">Players</span>
-                        </button>
+                        <button key={num} onClick={() => initNameSetup(num)} className="w-16 h-16 rounded-2xl bg-amber-500 text-white font-black text-3xl shadow-xl hover:scale-110 hover:bg-amber-600 transition-all">{num}</button>
                       ))}
                     </div>
                     <button onClick={() => setShowRules(true)} className="flex items-center justify-center gap-2 mx-auto text-gray-400 hover:text-orange-500 font-bold transition-colors mt-8"><BookOpen className="w-5 h-5" /> How to Play</button>
                   </div>
                 )}
 
-                {/* RULES MODAL */}
                 {showRules && (
                   <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
                     <div className="bg-white rounded-3xl p-8 max-w-lg w-full shadow-2xl border-4 border-amber-200 relative animate-in zoom-in duration-200 max-h-[90vh] overflow-y-auto">
                       <button onClick={() => setShowRules(false)} className="absolute top-4 right-4 p-2 bg-gray-100 rounded-full hover:bg-gray-200"><X className="w-6 h-6 text-gray-500" /></button>
-                      <h2 className="text-3xl font-black text-amber-800 mb-6 flex items-center gap-2"><Info className="w-8 h-8" /> Game Rules</h2>
-                      <div className="space-y-4 text-gray-700">
-                        <div className="bg-amber-50 p-4 rounded-xl border border-amber-100"><h3 className="font-bold text-amber-900 mb-1 flex items-center gap-2"><ArrowRight className="w-4 h-4" /> Goal</h3><p className="text-sm">Roll the d4 die to move. First player to reach the <strong>Feast (End)</strong> wins!</p></div>
-                        <div><h3 className="font-bold text-gray-900 mb-2">⚔️ Battles</h3><p className="text-sm mb-2">If you land on another player, a <strong>Rock-Paper-Scissors Battle</strong> begins! Winner stays, loser moves back 1 space.</p></div>
-                        <div><h3 className="font-bold text-gray-900 mb-2">👀 Cheating</h3><p className="text-sm mb-2">You can try to cheat instead of rolling. <strong>20% chance</strong> to move forward 5 spaces. <strong>80% chance</strong> to get caught by Grandma and move back 5!</p></div>
-                        <div>
-                          <h3 className="font-bold text-gray-900 mb-2">🎭 Roles</h3>
-                          <ul className="text-sm space-y-1">
-                            <li className="flex items-center gap-2"><Glasses className="w-3 h-3" /> <strong>Cousin:</strong> Starts with free shield.</li>
-                            <li className="flex items-center gap-2"><Pizza className="w-3 h-3" /> <strong>Glutton:</strong> Immune to skip turn.</li>
-                            <li className="flex items-center gap-2"><Megaphone className="w-3 h-3" /> <strong>Tattletale:</strong> Moves forward if others cheat.</li>
-                            <li className="flex items-center gap-2"><Crown className="w-3 h-3" /> <strong>Favorite:</strong> Starts with shield.</li>
-                          </ul>
-                        </div>
+                      <h2 className="text-3xl font-black text-amber-800 mb-6">Game Rules</h2>
+                      <div className="space-y-2 text-gray-700 text-sm">
+                        <p><strong>Goal:</strong> Reach the Feast (Tile 29) first!</p>
+                        <p><strong>Roles:</strong> Everyone has a unique ability. Check your player card.</p>
+                        <p><strong>Tiles:</strong> Watch out for Nap Time (Skip) and Mashed Potatoes (Back 1)!</p>
+                        <p><strong>Battle:</strong> Land on someone? Rock-Paper-Scissors! Loser moves back.</p>
                       </div>
-                      <button onClick={() => setShowRules(false)} className="w-full mt-8 bg-amber-500 text-white font-bold py-3 rounded-xl hover:bg-amber-600 transition-colors">Got it!</button>
+                      <button onClick={() => setShowRules(false)} className="w-full mt-6 bg-amber-500 text-white font-bold py-3 rounded-xl">Got it!</button>
                     </div>
                   </div>
                 )}
 
-                {/* SETUP: NAMES */}
                 {phase === GAME_PHASES.SETUP_NAMES && (
                   <div className="bg-white p-8 rounded-3xl shadow-xl max-w-2xl mx-auto mt-6 border-4 border-amber-200 animate-in slide-in-from-right-10 duration-300">
-                    <h2 className="text-3xl font-black mb-8 text-amber-800 text-center flex items-center justify-center gap-3"><Edit2 className="w-8 h-8" /> Customize Family</h2>
-                    <div className="space-y-4 mb-8 max-h-[60vh] overflow-y-auto pr-2 scrollbar-hide">
+                    <h2 className="text-3xl font-black mb-8 text-amber-800 text-center"><Edit2 className="inline w-8 h-8 mr-2"/> Family Setup</h2>
+                    <div className="space-y-4 mb-8 max-h-[60vh] overflow-y-auto pr-2">
                       {Array.from({ length: playerCount }).map((_, i) => (
                         <div key={i} className="flex flex-col md:flex-row gap-4 items-center bg-gray-50 p-4 rounded-xl border border-gray-100">
-                          <div className={`w-14 h-14 rounded-full flex items-center justify-center text-2xl shadow-lg transform rotate-3 ${COLORS[i].bg} text-white shrink-0 border-4 border-white ring-2 ${COLORS[i].ring}`}>{COLORS[i].icon}</div>
-                          <div className="flex-1 w-full space-y-1">
-                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-wider ml-1">Player Name</label>
-                            <input type="text" maxLength={12} value={playerNames[i]} onChange={(e) => handleNameChange(i, e.target.value)} placeholder={`Player ${i + 1}`} className="w-full border-2 border-gray-200 rounded-xl px-4 py-2 focus:border-amber-500 focus:outline-none focus:ring-4 focus:ring-amber-100 font-bold text-gray-700 bg-white" />
-                          </div>
-                          <div className="flex-1 w-full space-y-1">
-                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-wider ml-1">Role Ability</label>
-                            <div className="relative">
-                              <select value={playerRoles[i]} onChange={(e) => handleRoleChange(i, e.target.value)} className="w-full border-2 border-gray-200 rounded-xl px-4 py-2 focus:border-amber-500 focus:outline-none font-bold text-gray-700 appearance-none bg-white cursor-pointer">
+                          <div className={`w-14 h-14 rounded-full flex items-center justify-center text-2xl shadow-lg ${COLORS[i].bg} text-white shrink-0`}>{COLORS[i].icon}</div>
+                          <input type="text" maxLength={12} value={playerNames[i]} onChange={(e) => { const n = [...playerNames]; n[i] = e.target.value; setPlayerNames(n); }} placeholder={`Player ${i + 1}`} className="flex-1 border-2 border-gray-200 rounded-xl px-4 py-2 font-bold" />
+                          <div className="relative flex-1">
+                              <select value={playerRoles[i]} onChange={(e) => { const r = [...playerRoles]; r[i] = e.target.value; setPlayerRoles(r); }} className="w-full border-2 border-gray-200 rounded-xl px-4 py-2 font-bold appearance-none bg-white">
                                 {Object.values(ROLES).map(role => (<option key={role.id} value={role.id}>{role.name}</option>))}
                               </select>
-                              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500"><ArrowRight className="w-4 h-4 rotate-90" /></div>
-                            </div>
+                              <ArrowRight className="absolute right-3 top-3 w-4 h-4 text-gray-400 rotate-90 pointer-events-none" />
                           </div>
                         </div>
                       ))}
                     </div>
-                    <div className="flex gap-3">
-                      <button onClick={() => setPhase(GAME_PHASES.SETUP_COUNT)} className="px-6 py-4 rounded-xl font-bold text-gray-500 hover:bg-gray-100 transition-colors">Back</button>
-                      <button onClick={finalizeSetup} className="flex-1 bg-gradient-to-r from-green-500 to-green-600 text-white font-black py-4 rounded-xl shadow-lg hover:from-green-600 hover:to-green-700 transform transition active:scale-[0.98] flex items-center justify-center gap-3 text-xl">Start the Feast! <ArrowRight className="w-6 h-6" /></button>
-                    </div>
+                    <button onClick={finalizeSetup} className="w-full bg-green-500 text-white font-black py-4 rounded-xl shadow-lg hover:bg-green-600 text-xl">Start the Feast!</button>
                   </div>
                 )}
 
-                {/* MAIN GAME INTERFACE */}
                 {!['SETUP_COUNT', 'SETUP_NAMES'].includes(phase) && (
                   <>
-                    <div className="bg-amber-100 p-4 md:p-8 rounded-3xl shadow-2xl border-4 border-amber-800/20 relative overflow-hidden">
-                       <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: `repeating-linear-gradient(45deg, #b45309 25%, transparent 25%, transparent 75%, #b45309 75%, #b45309), repeating-linear-gradient(45deg, #b45309 25%, #fcd34d 25%, #fcd34d 75%, #b45309 75%, #b45309)`, backgroundPosition: '0 0, 10px 10px', backgroundSize: '20px 20px' }}></div>
+                    <div className="bg-amber-100 p-4 rounded-3xl shadow-2xl border-4 border-amber-800/20 relative overflow-hidden">
                        <svg className="absolute inset-0 w-full h-full pointer-events-none z-0" viewBox="0 0 100 100" preserveAspectRatio="none"><path d={getPathD()} fill="none" stroke="#b45309" strokeWidth="1.5" strokeDasharray="2 2" strokeOpacity="0.6" /></svg>
                        <div className="relative z-10 grid grid-cols-5 gap-2 md:gap-4 max-w-2xl mx-auto">{renderBoard()}</div>
                     </div>
 
-                    {renderBattleModal()}
-
-                    {phase === GAME_PHASES.EVENT_TRIGGER && activeEvent && (
-                       <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                          <div className={`bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl animate-in zoom-in duration-300 border-8 text-center ${activeEvent.type === 'saint' ? 'border-yellow-400' : 'border-purple-600'}`}>
-                            <div className="mb-4 flex justify-center">
-                              {activeEvent.type === 'saint' ? (<div className="w-24 h-24 bg-yellow-100 rounded-full flex items-center justify-center animate-bounce"><Star className="w-12 h-12 text-yellow-600" /></div>) : (<div className="w-24 h-24 bg-purple-100 rounded-full flex items-center justify-center animate-pulse"><Ghost className="w-12 h-12 text-purple-600" /></div>)}
+                    {battleState && (
+                        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                            <div className="bg-white rounded-3xl p-6 md:p-10 max-w-lg w-full text-center border-8 border-red-600 animate-in zoom-in">
+                                <Swords className="w-16 h-16 text-red-600 mx-auto mb-4 animate-pulse" />
+                                <h2 className="text-4xl font-black text-red-800 mb-6">BATTLE!</h2>
+                                {battleState.step === 'INTRO' && (
+                                    <>
+                                        <p className="text-xl font-bold mb-8">{battleState.attacker.name} vs {battleState.defender.name}</p>
+                                        <button onClick={() => setBattleState(prev => ({...prev, step: 'P1'}))} className="bg-red-600 text-white px-8 py-3 rounded-xl font-black text-xl hover:scale-105 transition-transform">Start</button>
+                                    </>
+                                )}
+                                {(battleState.step === 'P1' || battleState.step === 'P2') && (
+                                    <>
+                                        <h3 className="text-2xl font-bold mb-2">{battleState.step === 'P1' ? battleState.attacker.name : battleState.defender.name}'s Choice</h3>
+                                        <div className="flex justify-center gap-4 mt-8">
+                                            {['rock', 'paper', 'scissors'].map(c => (
+                                                <button key={c} onClick={() => handleBattleChoice(c)} className="w-20 h-20 bg-gray-100 rounded-xl text-4xl hover:bg-red-100 border-4 border-gray-200">{c === 'rock' ? '🪨' : c === 'paper' ? '📄' : '✂️'}</button>
+                                            ))}
+                                        </div>
+                                    </>
+                                )}
+                                {battleState.step === 'SWITCH' && (
+                                    <>
+                                        <div className="text-6xl mb-4">🙈</div>
+                                        <h3 className="text-2xl font-bold mb-4">Pass Device!</h3>
+                                        <p className="mb-6">Hand over to {battleState.defender.name}</p>
+                                        <button onClick={() => setBattleState(prev => ({...prev, step: 'P2'}))} className="bg-blue-600 text-white px-8 py-3 rounded-xl font-bold">Ready</button>
+                                    </>
+                                )}
+                                {battleState.step === 'RESULT' && (
+                                    <>
+                                        <div className="flex justify-center gap-8 mb-6 text-4xl">
+                                            <div>{battleState.p1Choice === 'rock' ? '🪨' : battleState.p1Choice === 'paper' ? '📄' : '✂️'}</div>
+                                            <div>VS</div>
+                                            <div>{battleState.p2Choice === 'rock' ? '🪨' : battleState.p2Choice === 'paper' ? '📄' : '✂️'}</div>
+                                        </div>
+                                        <h3 className="text-2xl font-black mb-6">{battleState.winner === 'tie' ? 'TIE!' : `${battleState.winner === battleState.attacker.id ? battleState.attacker.name : battleState.defender.name} WINS!`}</h3>
+                                        <button onClick={finalizeBattle} className="bg-gray-900 text-white px-8 py-3 rounded-xl font-bold">Continue</button>
+                                    </>
+                                )}
                             </div>
-                            <h2 className={`text-2xl font-black uppercase mb-2 ${activeEvent.type === 'saint' ? 'text-yellow-600' : 'text-purple-600'}`}>{activeEvent.title}</h2>
-                            <p className="text-gray-600 font-bold mb-6">{activeEvent.desc}</p>
-                            <button onClick={resolveEvent} className="w-full py-4 rounded-xl font-black text-white text-xl shadow-lg transform transition active:scale-95 bg-gray-900 hover:bg-black">Continue</button>
-                          </div>
-                       </div>
+                        </div>
                     )}
 
                     {targetMode && (
                        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
                          <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl animate-in zoom-in duration-200 border-4 border-amber-400">
-                           <h3 className="text-xl font-black text-center mb-6 text-gray-800">Play <span className="text-amber-600 underline decoration-wavy">"{selectedCard.title}"</span> on whom?</h3>
+                           <h3 className="text-xl font-black text-center mb-6 text-gray-800">Use <span className="text-amber-600">"{selectedCard.title}"</span> on?</h3>
                            <div className="grid grid-cols-2 gap-4 max-h-[50vh] overflow-y-auto p-2">
                              {players.map(p => (
-                               <button key={p.id} onClick={() => executeCardEffect(p.id)} className={`p-4 rounded-xl border-2 transition-all ${p.color.border} ${p.color.bg} bg-opacity-10 hover:bg-opacity-30 hover:scale-105 flex flex-col items-center justify-center gap-2 font-bold text-gray-800`}>
-                                 <span className="text-4xl filter drop-shadow-md">{p.icon}</span> <span>{p.name}</span>
+                               <button key={p.id} onClick={() => executeCardEffect(p.id)} className={`p-4 rounded-xl border-2 transition-all ${p.color.border} ${p.color.bg} bg-opacity-10 hover:bg-opacity-30 flex flex-col items-center justify-center gap-2 font-bold`}>
+                                 <span className="text-3xl">{p.icon}</span> <span>{p.name}</span>
                                </button>
                              ))}
                            </div>
-                           <button onClick={() => { setTargetMode(false); setSelectedCard(null); }} className="mt-6 w-full py-3 text-gray-500 hover:text-gray-800 hover:bg-gray-100 rounded-lg font-bold transition-colors">Cancel</button>
+                           <button onClick={() => { setTargetMode(false); setSelectedCard(null); }} className="mt-6 w-full py-3 text-gray-500 hover:bg-gray-100 rounded-lg font-bold">Cancel</button>
                          </div>
                        </div>
                     )}
@@ -976,53 +976,40 @@
                               <div className="text-3xl md:text-4xl font-black text-gray-800 flex items-center gap-3"><span className="text-4xl md:text-5xl">{players[currentPlayerIdx].icon}</span> {players[currentPlayerIdx].name}</div>
                               <div className="flex items-center gap-2 mt-1 text-xs font-bold text-gray-500 bg-gray-100 px-2 py-1 rounded w-fit">{players[currentPlayerIdx].role.icon} {players[currentPlayerIdx].role.name}</div>
                             </div>
-                            <div className="flex flex-col gap-2 items-end">
-                              {players[currentPlayerIdx].shield && (<div className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 border border-blue-200 shadow-sm animate-pulse"><Shield className="w-3 h-3" /> SHIELDED</div>)}
-                            </div>
+                            {players[currentPlayerIdx].shield && (<div className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 border border-blue-200 animate-pulse"><Shield className="w-3 h-3" /> SHIELD</div>)}
                           </div>
 
                           <div className="min-h-[160px] flex flex-col justify-center">
                             {phase === GAME_PHASES.START_TURN && (
-                              <div className="text-center w-full">
-                                <p className="mb-6 text-gray-500 font-medium">Play a card to mess with family,<br/>or just roll to escape them.</p>
-                                <div className="flex gap-2">
-                                  <button onClick={rollDice} className="flex-1 bg-gradient-to-r from-orange-500 to-red-500 text-white font-black py-5 rounded-xl shadow-lg shadow-orange-500/30 hover:shadow-orange-500/50 hover:from-orange-600 hover:to-red-600 transition-all text-2xl flex items-center justify-center gap-3 active:scale-95 group">🎲 ROLL D4</button>
-                                  <button onClick={handleCheat} className="w-24 bg-gray-100 hover:bg-gray-200 text-gray-400 hover:text-red-500 rounded-xl font-bold text-xs flex flex-col items-center justify-center gap-1 transition-all border-2 border-dashed border-gray-300 hover:border-red-400 group" title="20% chance to advance 5 spaces. 80% chance to go BACK 5 spaces!"><Eye className="w-5 h-5 group-hover:scale-110" /><span className="leading-tight">Cheat<br/>(Risk It)</span></button>
+                                <div className="flex flex-col gap-2">
+                                  <div className="flex gap-2">
+                                    <button onClick={rollDice} className="flex-1 bg-gradient-to-r from-orange-500 to-red-500 text-white font-black py-5 rounded-xl shadow-lg text-2xl hover:scale-105 transition-transform">🎲 ROLL D4</button>
+                                    <button onClick={handleCheat} className="w-24 bg-gray-100 hover:bg-red-50 text-gray-400 hover:text-red-500 rounded-xl font-bold text-xs flex flex-col items-center justify-center border-2 border-dashed border-gray-300 transition-colors"><Eye className="w-5 h-5 mb-1" />Cheat</button>
+                                  </div>
+                                  {canUseRigged && (
+                                     <button onClick={handleRiggedClick} className="w-full bg-pink-500 text-white font-black py-2 rounded-xl shadow-lg border-b-4 border-pink-700 animate-pulse text-sm hover:bg-pink-600">😭 THIS GAME IS RIGGED!</button>
+                                  )}
                                 </div>
-                              </div>
                             )}
                             {(phase === GAME_PHASES.ROLLING || phase === GAME_PHASES.MOVING) && (
                                <div className="flex flex-col items-center justify-center w-full">
-                                  <div className="relative"><div className="text-9xl font-black text-amber-600 animate-bounce drop-shadow-md">{diceVal !== null ? diceVal : '?'}</div></div>
-                                  <div className="text-sm font-bold text-amber-800/50 mt-2 tracking-widest uppercase">Moving Steps</div>
+                                  <div className="text-9xl font-black text-amber-600 animate-bounce drop-shadow-md">{diceVal !== null ? diceVal : '?'}</div>
                                </div>
                             )}
                             {phase === GAME_PHASES.DRAW_CHOICE && (
-                              <div className="text-center w-full animate-in fade-in slide-in-from-bottom-4">
-                                <h4 className="font-bold mb-4 text-gray-700">Move complete! Draw a card:</h4>
-                                <div className="grid grid-cols-2 gap-4">
-                                  <button onClick={() => drawCard('offense')} className="group h-36 bg-red-50 border-2 border-red-200 rounded-xl p-2 hover:bg-red-100 hover:border-red-400 transition-all flex flex-col items-center justify-center gap-2 relative overflow-hidden">
-                                    <div className="absolute inset-0 bg-red-500 opacity-0 group-hover:opacity-5 transition-opacity"></div>
-                                    <Skull className="w-10 h-10 text-red-600 group-hover:scale-110 transition-transform" />
-                                    <div><span className="block font-black text-red-800 text-lg">OFFENSE</span><span className="block text-xs text-red-600 font-medium">Attack!</span></div>
-                                  </button>
-                                  <button onClick={() => drawCard('defense')} className="group h-36 bg-blue-50 border-2 border-blue-200 rounded-xl p-2 hover:bg-blue-100 hover:border-blue-400 transition-all flex flex-col items-center justify-center gap-2 relative overflow-hidden">
-                                    <div className="absolute inset-0 bg-blue-500 opacity-0 group-hover:opacity-5 transition-opacity"></div>
-                                    <Shield className="w-10 h-10 text-blue-600 group-hover:scale-110 transition-transform" />
-                                    <div><span className="block font-black text-blue-800 text-lg">DEFENSE</span><span className="block text-xs text-blue-600 font-medium">Buff Self!</span></div>
-                                  </button>
-                                </div>
+                              <div className="grid grid-cols-2 gap-4 animate-in fade-in">
+                                <button onClick={() => drawCard('offense')} className="h-32 bg-red-50 border-2 border-red-200 rounded-xl hover:bg-red-100 flex flex-col items-center justify-center gap-2">
+                                    <Skull className="w-8 h-8 text-red-600" /><span className="font-black text-red-800">OFFENSE</span>
+                                </button>
+                                <button onClick={() => drawCard('defense')} className="h-32 bg-blue-50 border-2 border-blue-200 rounded-xl hover:bg-blue-100 flex flex-col items-center justify-center gap-2">
+                                    <Shield className="w-8 h-8 text-blue-600" /><span className="font-black text-blue-800">DEFENSE</span>
+                                </button>
                               </div>
                             )}
                           </div>
                         </div>
-                        <div className="bg-gray-900 text-green-400 font-mono text-sm p-4 rounded-2xl shadow-lg h-48 overflow-y-auto border-4 border-gray-800 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900">
-                          {logs.map((log, i) => (
-                            <div key={i} className="mb-2 border-b border-gray-800 pb-2 last:border-0 last:pb-0 flex gap-2">
-                              <span className="opacity-40 select-none text-xs mt-0.5">{i+1}.</span> 
-                              <span>{log}</span>
-                            </div>
-                          ))}
+                        <div className="bg-gray-900 text-green-400 font-mono text-sm p-4 rounded-2xl shadow-lg h-48 overflow-y-auto border-4 border-gray-800">
+                          {logs.map((log, i) => (<div key={i} className="mb-2 border-b border-gray-800 pb-2 flex gap-2"><span className="opacity-40 select-none text-xs mt-0.5">{i+1}.</span><span>{log}</span></div>))}
                           <div ref={logEndRef} />
                         </div>
                       </div>
@@ -1033,14 +1020,13 @@
                         </div>
                         <div className="flex-1 overflow-x-auto pb-4 custom-scrollbar">
                           {players[currentPlayerIdx].cards.length === 0 ? (
-                             <div className="h-full min-h-[200px] flex flex-col items-center justify-center text-gray-400 border-2 border-dashed border-gray-300 rounded-xl bg-slate-50/50"><Dna className="w-10 h-10 mb-2 opacity-20" /><span className="font-medium italic">Empty Hand</span><span className="text-xs opacity-60">Draw cards at the end of your turn!</span></div>
+                             <div className="h-full min-h-[200px] flex flex-col items-center justify-center text-gray-400 border-2 border-dashed border-gray-300 rounded-xl bg-slate-50/50"><Dna className="w-10 h-10 mb-2 opacity-20" /><span className="font-medium italic">Empty Hand</span></div>
                           ) : (
                             <div className="flex gap-4 px-2 min-h-[220px] items-center">
                               {players[currentPlayerIdx].cards.map((card, idx) => (<Card key={idx} card={card} isSelected={selectedCard?.index === idx} onClick={() => { if (phase === GAME_PHASES.START_TURN) playCard(idx); }} />))}
                             </div>
                           )}
                         </div>
-                        {phase !== GAME_PHASES.START_TURN && players[currentPlayerIdx].cards.length > 0 && (<div className="text-xs text-amber-600 mt-2 font-bold text-center bg-amber-50 py-2 rounded border border-amber-100"><AlertTriangle className="w-3 h-3 inline mr-1" />Cards can only be played at the start of your turn.</div>)}
                       </div>
                     </div>
                   </>
