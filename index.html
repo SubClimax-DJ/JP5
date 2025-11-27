@@ -3,1962 +3,1037 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- 1. TITLE CHANGED -->
-    <title>IT Admin Panel</title>
+    <title>Prebeg Spanks-Giving</title>
     
-    <!-- 2. Google Font -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;7.00&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    
+    <!-- Babel for JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-    <!-- 3. Gruvbox Dark Theme & Layout Styles -->
+    <!-- Custom Styles -->
     <style>
-        /* Gruvbox Dark Colors */
-        :root {
-            --bg: #282828;
-            --bg-dark: #1d2021;
-            --bg-light: #3c3836;
-            --bg-med: #504945;
-            --fg: #ebdbb2;
-            --fg-gray: #a89984;
-            --red: #fb4934;
-            --green: #b8bb26;
-            --yellow: #fabd2f;
-            --blue: #83a598;
-            --purple: #d3869b;
-            --aqua: #8ec07c;
-            --orange: #fe8019;
-            --border-color: #504945;
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
         }
-
-        /* Base */
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg);
-            color: var(--fg);
-            margin: 0;
-            padding: 0;
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
         }
-        .container {
-            /* UPDATED: Removed width and max-width constraints */
-            /* width: 95%; */
-            /* max-width: 1800px; */
-            margin: 0 auto;
-            /* UPDATED: Reduced padding */
-            padding: 0.75rem 1rem;
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
         }
-        
-        /* Header */
-        header {
-            background-color: var(--bg-dark);
-            color: var(--fg);
-            /* UPDATED: Reduced padding */
-            padding: 0.75rem 1rem;
-            border-bottom: 2px solid var(--border-color);
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
-        .header-content {
-            display: flex;
-            justify-content: flex-start;
-            align-items: center;
-            /* UPDATED: Reduced gap */
-            gap: 1.5rem; 
-            /* UPDATED: Removed max-width */
-            /* max-width: 1800px; */
-            margin: 0 auto;
-        }
-        /* NEW: Header Tabs */
-        .header-tabs {
-            display: flex;
-            gap: 0.5rem;
-            background-color: var(--bg-med);
-            border-radius: 8px;
-            padding: 4px;
-        }
-        .tab-btn {
-            background-color: transparent;
-            border: none;
-            color: var(--fg-gray);
-            padding: 0.5rem 1rem;
-            border-radius: 6px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .tab-btn.active, .tab-btn:hover {
-            background-color: var(--bg-light);
-            color: var(--fg);
-        }
-
-        #auth-status {
-            font-size: 0.9rem;
-            color: var(--fg-gray);
-            /* NEW: Push to the right */
-            margin-left: auto; 
-        }
-        .connected {
-            color: var(--green) !important;
-        }
-        .disconnected {
-            color: var(--red) !important;
-        }
-
-        /* Sections */
-        .section {
-            background-color: var(--bg-light);
-            /* UPDATED: Removed border */
-            border: none;
-            border-radius: 8px;
-            /* UPDATED: Reduced padding and margin */
-            padding: 1rem;
-            margin-bottom: 1rem;
-        }
-        h2 {
-            /* UPDATED: Reduced font size and margin */
-            font-size: 1.25rem;
-            font-weight: 600;
-            color: var(--aqua);
-            margin-top: 0;
-            margin-bottom: 0.75rem;
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 0.5rem;
-        }
-        h3 {
-            /* UPDATED: Reduced font size and margin */
-            font-size: 1.1rem;
-            font-weight: 500;
-            color: var(--blue);
-            margin-top: 0;
-            margin-bottom: 0.5rem;
-        }
-        .grid-2 {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            /* UPDATED: Reduced gap */
-            gap: 1rem;
-        }
-        .grid-3 {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            /* UPDATED: Reduced gap */
-            gap: 1rem;
-        }
-        
-        /* Forms */
-        input[type="text"], input[type="password"] {
-            width: 100%;
-            /* UPDATED: Reduced padding */
-            padding: 0.5rem 0.75rem;
-            background-color: var(--bg-med);
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            color: var(--fg);
-            font-size: 1rem;
-            box-sizing: border-box; /* Important */
-            margin-bottom: 0.5rem;
-        }
-        input[type="text"]:focus, input[type="password"]:focus {
-            outline: none;
-            border-color: var(--blue);
-            box-shadow: 0 0 0 2px var(--blue);
-        }
-        .btn {
-            padding: 0.6rem 1rem;
-            border-radius: 6px;
-            font-weight: 600;
-            border: none;
-            cursor: pointer;
-            font-size: 0.9rem;
-            transition: opacity 0.2s;
-        }
-        .btn:hover {
-            opacity: 0.8;
-        }
-        .btn-blue { background-color: var(--blue); color: var(--bg-dark); }
-        .btn-green { background-color: var(--green); color: var(--bg-dark); }
-        .btn-gray { background-color: var(--bg-med); color: var(--fg); }
-        .btn-red { background-color: var(--red); color: var(--fg); }
-        .btn-purple { background-color: var(--purple); color: var(--bg-dark); }
-        .btn-orange { background-color: var(--orange); color: var(--bg-dark); }
-        
-        .btn-group {
-            display: flex;
-            gap: 0.5rem;
-        }
-        .btn-group .btn {
-            flex: 1;
-        }
-        .btn-full {
-            width: 100%;
-        }
-
-        /* Search Results */
-        #search-results, #sibling-group-list {
-            background-color: var(--bg-med);
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            /* UPDATED: Reduced height */
-            max-height: 120px;
-            overflow-y: auto;
-            padding: 0.25rem;
-        }
-        /* NEW: Added height for admin group builder */
-        #sibling-group-list, #admin-group-builder-list { min-height: 50px; }
-        .search-item, .sibling-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0.5rem 0.75rem;
-            border-radius: 4px;
-        }
-        .search-item:hover {
-            background-color: var(--bg-light);
-        }
-        /* NEW: Style for group search results */
-        .search-item.group-result {
-            background-color: var(--bg-dark);
-            border-left: 3px solid var(--green);
-        }
-        .sibling-item {
-            background-color: var(--bg-dark);
-            margin: 0.25rem;
-        }
-        .search-item-actions { display: flex; gap: 4px; }
-        .search-item-actions .btn { padding: 4px 6px; font-size: 0.75rem; }
-        
-        /* Tables */
-        .table-container {
-            /* UPDATED: Increased height using viewport units */
-            max-height: 65vh;
-            overflow-y: auto;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        th, td {
-            border: 1px solid var(--border-color);
-            /* UPDATED: Reduced padding */
-            padding: 6px 8px;
-            text-align: left;
-            font-size: 0.9rem;
-        }
-        th {
-            background-color: var(--bg-light);
-            font-weight: 600;
-            color: var(--aqua);
-            position: sticky; /* Sticky header for table */
-            top: 0;
-        }
-        tr:nth-child(even) {
-            background-color: #32302f;
-        }
-        /* Highlight style */
-        tr.highlighted, .highlighted {
-            background-color: var(--yellow) !important;
-            color: var(--bg-dark) !important;
-            font-weight: 600;
-        }
-        tr.highlighted code, .highlighted code {
-            color: var(--bg-dark);
-        }
-        td.actions-cell {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 4px;
-        }
-        .action-btn {
-            padding: 4px 8px;
-            border-radius: 4px;
-            color: var(--bg-dark);
-            font-size: 0.75rem;
-            font-weight: 500;
-            border: none;
-            cursor: pointer;
-        }
-        .btn-delete { background-color: var(--red); color: var(--fg); }
-        .btn-highlight { background-color: var(--yellow); }
-        .btn-note { background-color: var(--blue); }
-
-        /* Sibling Group List in Table */
-        .sibling-group-ul {
-            list-style-type: none;
-            padding-left: 0;
-            margin: 0;
-        }
-        .sibling-group-ul li {
-            padding: 4px;
-            margin: 2px 0;
-            border-radius: 4px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .sibling-group-ul li.highlighted {
-            background-color: var(--yellow);
-            color: var(--bg-dark);
-        }
-        .sibling-group-ul li .actions-cell {
-            padding-left: 8px;
-            flex-shrink: 0; /* Prevent buttons from wrapping */
-        }
-        
-        /* Modals */
-        .modal-backdrop {
-            position: fixed;
-            inset: 0;
-            background-color: rgba(0, 0, 0, 0.75);
-            z-index: 20;
-            display: none; /* hidden */
-            align-items: center;
-            justify-content: center;
-        }
-        .modal-box {
-            background-color: var(--bg-light);
-            border: 1px solid var(--border-color);
-            padding: 1.5rem;
-            border-radius: 8px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-            width: 100%;
-            max-width: 400px;
-        }
-        .modal-box h3 {
-            color: var(--fg);
-            margin-top: 0;
-        }
-        #modal-error {
-            color: var(--red);
-            font-size: 0.9rem;
-            display: none; /* hidden */
-        }
-        .modal-actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 0.5rem;
-            margin-top: 1rem;
-        }
-
-        /* NEW: Admin Roster List */
-        #admin-roster-list-container {
-            background-color: var(--bg-med);
-        }
-        #admin-roster-list .roster-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0.5rem 0.75rem;
-            border-radius: 4px;
-            background-color: var(--bg-light);
-            margin: 0.25rem;
-        }
-        #admin-roster-list .roster-item:hover {
-            background-color: var(--bg-dark);
-        }
-        
-        /* Responsive - REMOVED */
-        /* @media (max-width: 900px) {
-            .grid-3 { grid-template-columns: 1fr; }
-        }
-        */
-        /* UPDATED: Roster list item actions */
-        .roster-item-actions {
-            display: flex;
-            gap: 4px;
-        }
-
-        /* NEW: Admin group builder search results */
-        #admin-group-search-results {
-            background-color: var(--bg-med);
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            max-height: 100px;
-            overflow-y: auto;
-            padding: 0.25rem;
-        }
-        #admin-permanent-group-list {
-            background-color: var(--bg-med);
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            padding: 0.25rem;
-            max-height: 200px;
-            overflow-y: auto;
-        }
-        .permanent-group-item {
-             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0.5rem 0.75rem;
-            border-radius: 4px;
-            background-color: var(--bg-light);
-            margin: 0.25rem;
-        }
-        .permanent-group-item ul {
-            font-size: 0.8rem;
-            color: var(--fg-gray);
-            padding-left: 1rem;
-            margin: 0.25rem 0 0 0;
-        }
-
-        /* NEW: Make admin section fill height */
-        #admin-view > .section {
-            /* 85vh = 85% of the viewport height, leaving room for the header */
-            min-height: 85vh;
-        }
-
     </style>
 </head>
-<body>
+<body class="bg-orange-50">
+    <div id="root"></div>
 
-    <!-- HEADER -->
-    <header>
-        <div class="header-content">
-            <h1>IT Admin Panel</h1>
-            <!-- NEW: Tabs -->
-            <div class="header-tabs">
-                <button id="queues-tab-btn" class="tab-btn active">Queues</button>
-                <button id="admin-tab-btn" class="tab-btn">Admin Panel</button>
-            </div>
-            <div id="auth-status">Connecting...</div>
-        </div>
-    </header>
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
 
-    <!-- MAIN CONTENT -->
-    <main class="container">
-    
-        <!-- 1. QUEUES VIEW (Original content) -->
-        <div id="queues-view">
-            <!-- 1. Add Student to Queue -->
-            <section class="section">
-                <h2>1. Add Student to Queue</h2>
-                <!-- UPDATED: Changed to grid-3 and restructured content -->
-                <div class="grid-3">
-                    <!-- Column 1: Search -->
-                    <div>
-                        <h3>Find Student</h3>
-                        <input type="text" id="search-input" placeholder="Type a student's name...">
-                        <div id="search-results">
-                            <p style="padding: 0.5rem 0.75rem; color: var(--fg-gray);">Start typing to see results...</p>
-                        </div>
-                    </div>
-                    
-                    <!-- Column 2: Manual Add -->
-                    <div>
-                        <h3>Manual Add</h3>
-                        <input type="text" id="manual-name-input" placeholder="Manual name (e.g., 'Visitor')">
-                        <div class="btn-group">
-                            <button id="manual-add-btn" class="btn btn-blue" data-queue="1">Pre-K-5</button>
-                            <button id="manual-add-btn-sib" class="btn btn-green" data-queue="2">6th-8th</button>
-                            <button id="manual-add-btn-walk" class="btn btn-gray" data-queue="3">Walk</button>
-                        </div>
-                    </div>
+        // --- ICONS (SVG Components) ---
+        // Replacing lucide-react imports with inline SVGs for browser compatibility
+        const Icon = ({ path, className = "w-6 h-6", ...props }) => (
+            <svg 
+                xmlns="http://www.w3.org/2000/svg" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2" 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                className={className} 
+                {...props}
+            >
+                <path d={path} />
+            </svg>
+        );
 
-                    <!-- Column 3: Group Add -->
-                    <div>
-                        <h3>Group Add</h3>
-                        <p style="font-size: 0.9rem; color: var(--fg-gray); margin-bottom: 0.5rem;">Click "Group" in search to build a group below.</p>
-                        <div id="sibling-group-list">
-                            <p style="padding: 0.5rem 0.75rem; color: var(--fg-gray);">No students staged.</p>
-                        </div>
-                        <button id="add-staged-group-btn" class="btn btn-green btn-full" style="margin-top: 1rem;">
-                            Add Group to Sibling Queue
-                        </button>
-                    </div>
-                </div>
-            </section>
+        const Drumstick = (props) => <Icon path="M15.45 13.9 19 19l-1.6 2.4a2.9 2.9 0 0 1-4.8-.3L8.5 14.5a3.5 3.5 0 0 1-1.3-4.1l.8-2.6 1.8 1.8a2 2 0 0 0 2.8 0l1.1-1.1a2 2 0 0 0 0-2.8l-1.8-1.8 2.6-.8a3.5 3.5 0 0 1 4.1 1.3L21 8.5l-5.55 5.4Z" {...props} />;
+        const Shield = (props) => <Icon path="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" {...props} />;
+        const Skull = (props) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/><path d="M8 20v2h8v-2"/><path d="M12.5 17l-.5-1-.5 1h1z"/><path d="M16 20a2 2 0 0 0 1.56-3.25 8 8 0 1 0-11.12 0A2 2 0 0 0 8 20"/></svg>;
+        const PartyPopper = (props) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M5.8 11.3 2 22l10.7-3.79"/><path d="M4 3h.01"/><path d="M22 8h.01"/><path d="M15 2h.01"/><path d="M22 20h.01"/><path d="m22 2-2.24.75a2.9 2.9 0 0 0-1.96 3.12v0c.1.86-.57 1.63-1.45 1.63h-.38c-.86 0-1.6.6-1.76 1.44L14 10"/><path d="m22 13-.82-.33c-.86-.34-1.82.2-1.98 1.11v0c-.11.7-.72 1.22-1.43 1.22h-.73c-.91 0-1.68.65-1.81 1.55l-.03.22a2.95 2.95 0 0 0 .53 2.37l.81.93"/></svg>;
+        const ArrowRight = (props) => <Icon path="M5 12h14M12 5l7 7-7 7" {...props} />;
+        const Dna = (props) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M2 15c6.667-6 13.333 0 20-6"/><path d="M9 22c1.798-1.998 2.518-3.995 2.807-5.993"/><path d="M15 2c-1.798 1.998-2.518 3.995-2.807 5.993"/><path d="M17 12a5.002 5.002 0 0 0-3 7"/><path d="M12 12a5.002 5.002 0 0 0 4-3"/></svg>;
+        const Utensils = (props) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg>;
+        const AlertTriangle = (props) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>;
+        const Edit2 = (props) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>;
+        const Info = (props) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>;
+        const Star = (props) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>;
+        const Ghost = (props) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M9 10h.01"/><path d="M15 10h.01"/><path d="M12 2a8 8 0 0 0-8 8v12l3-3 2.5 2.5L12 19l2.5 2.5L17 19l3 3V10a8 8 0 0 0-8-8z"/></svg>;
+        const Swords = (props) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><polyline points="14.5 17.5 3 6 3 3 6 3 17.5 14.5"/><line x1="13" y1="19" x2="19" y2="13"/><line x1="16" y1="16" x2="20" y2="20"/><line x1="19" y1="21" x2="21" y2="19"/><polyline points="14.5 6.5 18 3 21 3 21 6 17.5 9.5"/><line x1="5" y1="14" x2="9" y2="18"/><line x1="7" y1="17" x2="4" y2="20"/><line x1="3" y1="19" x2="5" y2="21"/></svg>;
+        const Eye = (props) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>;
+        const Crown = (props) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14"/></svg>;
+        const Megaphone = (props) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="m3 11 18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg>;
+        const Pizza = (props) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M15 11h.01"/><path d="M11 15h.01"/><path d="M16 16h.01"/><path d="m2 16 20 6-6-20A20 20 0 0 0 2 16"/></svg>;
+        const Glasses = (props) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><circle cx="6" cy="15" r="4"/><circle cx="18" cy="15" r="4"/><path d="M14 15a2 2 0 0 0-2-2 2 2 0 0 0-2 2"/><path d="M2.5 13 5 7c.7-1.3 1.4-2 3-2"/><path d="M21.5 13 19 7c-.7-1.3-1.5-2-3.2-2"/></svg>;
+        const BookOpen = (props) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>;
+        const X = (props) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>;
 
-            <!-- 2. Live Queues -->
-            <section class="section">
-                <h2>Live Queues</h2>
-                <div class="grid-3">
-                    <!-- K-5 Queue -->
-                    <div>
-                        <h3 style="color: var(--blue);">Pre-K thru Grade 5 <span id="q1-count">(0)</span></h3>
-                        <div class="table-container">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Name (Grade)</th>
-                                        <th>Note</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="q1-table-body">
-                                    <tr><td colspan="3" style="text-align: center; color: var(--fg-gray);">Loading...</td></tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                    <!-- Siblings Queue -->
-                    <div>
-                        <h3 style="color: var(--green);">Siblings & 6th - 8th <span id="q2-count">(0)</span></h3>
-                        <div class="table-container">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Students</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="q2-table-body">
-                                    <tr><td colspan="2" style="text-align: center; color: var(--fg-gray);">Loading...</td></tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                    <!-- Walkers Queue -->
-                    <div>
-                        <h3 style="color: var(--fg-gray);">Walkers <span id="q3-count">(0)</span></h3>
-                        <div class="table-container">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Name (Grade)</th>
-                                        <th>Note</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="q3-table-body">
-                                    <tr><td colspan="3" style="text-align: center; color: var(--fg-gray);">Loading...</td></tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </section>
-            
-            <!-- 3. Picked Up List -->
-            <section class="section">
-                <!-- UPDATED: Removed the "Reset" button from here -->
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                    <h2 style="color: var(--purple); margin: 0; border: none; padding: 0;">Picked Up <span id="pickedup-count">(0)</span></h2>
-                </div>
-                <div class="table-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Grade</th>
-                                <th>Picked Up At</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody id="pickedup-table-body">
-                            <tr><td colspan="4" style="text-align: center; color: var(--fg-gray);">Loading...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-        </div> <!-- END of #queues-view -->
+        // --- GAME DATA & CONSTANTS ---
 
-        <!-- 2. NEW ADMIN VIEW -->
-        <div id="admin-view" style="display: none;">
-            <section class="section">
-                <h2>Admin Panel: Roster & Site Management</h2>
-                <!-- UPDATED: Changed to grid-3 -->
-                <div class="grid-3">
-                    <!-- Column 1: Add Student & Danger Zone -->
-                    <div>
-                        <h3>Add New Student to Roster</h3>
-                        <input type="text" id="admin-first-name" placeholder="First Name">
-                        <input type="text" id="admin-last-name" placeholder="Last Name">
-                        <input type="text" id="admin-grade" placeholder="Grade (e.g., 5, KG)">
-                        <button id="admin-add-student-btn" class="btn btn-blue btn-full">Add Student</button>
-                        
-                        <h3 style="margin-top: 2rem; color: var(--red);">Danger Zone</h3>
-                        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-                            <button id="clear-all-btn" class="btn btn-red">Clear All 3 Queues</button>
-                            <button id="clear-pickedup-btn" class="btn btn-orange">Reset "Picked Up" List</button>
-                        </div>
-                    </div>
-                    <!-- Column 2: Roster List -->
-                    <div>
-                        <h3>Current Roster</h3>
-                        <div id="admin-roster-list-container" class="table-container" style="max-height: 70vh;">
-                            <div id="admin-roster-list" style="padding: 0.25rem;">
-                                <p style="padding: 0.5rem 0.75rem; color: var(--fg-gray);">Loading roster...</p>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- NEW: Column 3: Manage Groups -->
-                    <div>
-                        <h3>Manage Permanent Groups</h3>
-                        <input type="text" id="admin-group-name-input" placeholder="New Group Name (e.g., 'Smith Family')">
-                        
-                        <h4 style="font-size: 1rem; color: var(--fg-gray); margin-bottom: 0.5rem; margin-top: 1rem;">Build Group:</h4>
-                        <input type="text" id="admin-group-search-input" placeholder="Search roster to add student...">
-                        <div id="admin-group-search-results">
-                             <p style="padding: 0.5rem 0.75rem; color: var(--fg-gray);">Type above to find students...</p>
-                        </div>
-                        <div id="admin-group-builder-list" style="margin-top: 0.5rem;">
-                            <p style="padding: 0.5rem 0.75rem; color: var(--fg-gray);">No students staged for group.</p>
-                        </div>
-                        <button id="admin-save-group-btn" class="btn btn-green btn-full" style="margin-top: 0.5rem;">Save New Group</button>
+        const BOARD_SIZE = 29; // 0 to 29 (30 spaces total)
+        const GRID_COLS = 5; 
+        const GRID_ROWS = 6;
 
-                        <h3 style="margin-top: 1.5rem;">Existing Groups</h3>
-                        <div id="admin-permanent-group-list-container" class="table-container" style="max-height: 60vh;">
-                            <div id="admin-permanent-group-list">
-                                <p style="padding: 0.5rem 0.75rem; color: var(--fg-gray);">Loading groups...</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-        </div> <!-- END of #admin-view -->
-    
-    </main>
-    
-    <!-- PASSWORD MODAL -->
-    <div id="password-modal-backdrop" class="modal-backdrop">
-        <div id="password-modal-box" class="modal-box">
-            <h3>Enter Admin Password</h3>
-            <p id="password-modal-prompt" style="color: var(--fg-gray); margin-bottom: 1rem;">Please enter the admin password.</p>
-            
-            <input type="password" id="modal-password-input" placeholder="Password...">
-            <p id="modal-error">Incorrect password.</p>
+        const COLORS = [
+          { name: 'Red', bg: 'bg-red-500', text: 'text-red-700', border: 'border-red-600', ring: 'ring-red-300', icon: '🦃' },
+          { name: 'Blue', bg: 'bg-blue-500', text: 'text-blue-700', border: 'border-blue-600', ring: 'ring-blue-300', icon: '🏈' },
+          { name: 'Green', bg: 'bg-green-500', text: 'text-green-700', border: 'border-green-600', ring: 'ring-green-300', icon: '🥧' },
+          { name: 'Yellow', bg: 'bg-yellow-500', text: 'text-yellow-700', border: 'border-yellow-600', ring: 'ring-yellow-300', icon: '🎩' },
+        ];
 
-            <div class="modal-actions">
-                <button id="modal-cancel-btn" class="btn btn-gray">
-                    Cancel
-                </button>
-                <button id="modal-confirm-btn" class="btn btn-red">
-                    Confirm
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- CONFIRMATION MODAL -->
-    <div id="confirmation-modal-backdrop" class="modal-backdrop">
-        <div id="confirmation-modal-box" class="modal-box">
-            <h3 id="confirmation-modal-title">Confirm Action</h3>
-            <p id="confirmation-modal-prompt" style="color: var(--fg-gray); margin-bottom: 1rem;">Are you sure?</p>
-            
-            <div class="modal-actions">
-                <button id="confirmation-modal-cancel-btn" class="btn btn-gray">
-                    Cancel
-                </button>
-                <button id="confirmation-modal-confirm-btn" class="btn btn-red">
-                    Confirm
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- NEW: EDIT STUDENT MODAL -->
-    <div id="edit-student-modal-backdrop" class="modal-backdrop">
-        <div id="edit-student-modal-box" class="modal-box">
-            <h3>Edit Student</h3>
-            
-            <input type="hidden" id="modal-edit-student-id">
-            
-            <label for="modal-edit-first-name">First Name</label>
-            <input type="text" id="modal-edit-first-name" placeholder="First Name">
-            
-            <label for="modal-edit-last-name">Last Name</label>
-            <input type="text" id="modal-edit-last-name" placeholder="Last Name">
-            
-            <label for="modal-edit-grade">Grade</label>
-            <input type="text" id="modal-edit-grade" placeholder="Grade">
-            
-            <p id="modal-edit-error" style="color: var(--red); font-size: 0.9rem; display: none;">All fields are required.</p>
-
-            <div class="modal-actions">
-                <button id="modal-edit-cancel-btn" class="btn btn-gray">
-                    Cancel
-                </button>
-                <button id="modal-edit-save-btn" class="btn btn-blue">
-                    Save Changes
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Firebase and App Logic -->
-    <script type="module">
-        // --- Firebase Imports ---
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { 
-            getAuth, 
-            signInAnonymously, 
-            onAuthStateChanged 
-        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { 
-            getFirestore, 
-            doc, 
-            addDoc, 
-            deleteDoc, 
-            onSnapshot, 
-            collection, 
-            query, 
-            getDocs,
-            getDoc,
-            updateDoc,
-            serverTimestamp,
-            setLogLevel
-        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        // --- Firebase Config (IDENTICAL to index.html) ---
-        const firebaseConfig = {
-          apiKey: "AIzaSyBbTFLhxzXf08OVDGGsK54t3qDzPVvsJ3w",
-          authDomain: "conferencedoral.firebaseapp.com",
-          databaseURL: "https://conferencedoral-default-rtdb.firebaseio.com",
-          projectId: "conferencedoral",
-          storageBucket: "conferencedoral.firebasestorage.app",
-          messagingSenderId: "668062587354",
-          appId: "1:668062587354:web:9b831842ada6ebf87148e3",
-          measurementId: "G-HDJ9S9G2T2"
+        const ROLES = {
+          COUSIN: { id: 'cousin', name: 'Cool Cousin', desc: 'Starts with "Get Out of Jail" card.', icon: <Glasses className="w-4 h-4" /> },
+          GLUTTON: { id: 'glutton', name: 'The Glutton', desc: 'Immune to "Skip Turn" effects.', icon: <Pizza className="w-4 h-4" /> },
+          TATTLE: { id: 'tattle', name: 'The Tattletale', desc: 'Moves forward 3 spaces if others get caught cheating.', icon: <Megaphone className="w-4 h-4" /> },
+          FAV: { id: 'fav', name: 'Grandma\'s Fav', desc: 'Starts the game with a Shield.', icon: <Crown className="w-4 h-4" /> },
         };
-        
-        // --- DOM Elements ---
-        const authStatus = document.getElementById('auth-status');
-        
-        // NEW: View Toggling
-        const queuesTabBtn = document.getElementById('queues-tab-btn');
-        const adminTabBtn = document.getElementById('admin-tab-btn');
-        const queuesView = document.getElementById('queues-view');
-        const adminView = document.getElementById('admin-view');
 
-        // Add Student Section
-        const searchInput = document.getElementById('search-input');
-        const searchResults = document.getElementById('search-results');
-        const manualNameInput = document.getElementById('manual-name-input');
-        const manualAddBtn = document.getElementById('manual-add-btn');
-        const manualAddBtnSib = document.getElementById('manual-add-btn-sib');
-        const manualAddBtnWalk = document.getElementById('manual-add-btn-walk');
-        const stagedList = document.getElementById('sibling-group-list');
-        const addStagedGroupBtn = document.getElementById('add-staged-group-btn');
+        const SPECIAL_TILES = {
+          3: { icon: '🥔', label: 'Mashed' },
+          7: { icon: '🍷', label: 'Cheers' },
+          12: { icon: '😴', label: 'Nap Time' },
+          18: { icon: '🏈', label: 'Touchdown' },
+          24: { icon: '🦴', label: 'Wishbone' },
+          28: { icon: '🥧', label: 'Dessert' },
+        };
 
-        // Queues
-        const q1TableBody = document.getElementById('q1-table-body');
-        const q2TableBody = document.getElementById('q2-table-body');
-        const q3TableBody = document.getElementById('q3-table-body');
-        const q1Count = document.getElementById('q1-count');
-        const q2Count = document.getElementById('q2-count');
-        const q3Count = document.getElementById('q3-count');
+        const OFFENSIVE_DECK = [
+          { id: 'o1', title: 'Uncle Jeff\'s Politics', desc: 'He brought up the election. Again.', effect: 'skip_turn', value: 1, flavor: 'Hide in the garage with Uncle Charlie.' },
+          { id: 'o2', title: 'Burnt Rolls', desc: 'Aunt Claudia forgot the timer!', effect: 'move_back', value: 3, flavor: 'Go back 3 spaces to buy more.' },
+          { id: 'o3', title: 'Kids Table Exile', desc: 'Aunt Anna said there\'s no room for you.', effect: 'move_back', value: 5, flavor: 'Retreat 5 spaces to the folding chairs.' },
+          { id: 'o4', title: 'Grandma Ann\'s Guilt', desc: 'She asked why you never call.', effect: 'move_back', value: 2, flavor: 'Move back 2 spaces from emotional damage.' },
+          { id: 'o5', title: 'Uncle Rob\'s Prank', desc: 'He put hot sauce in your pie.', effect: 'swap', value: 0, flavor: 'Swap places with someone while running for water!' },
+          { id: 'o6', title: 'Uncle Roger\'s Story', desc: 'It\'s the one about the fishing trip. It never ends.', effect: 'skip_turn', value: 1, flavor: 'Skip a turn falling asleep.' },
+          { id: 'o7', title: 'Spilled Gravy', desc: 'Uncle Joe bumped the table!', effect: 'move_back', value: 4, flavor: 'Go back 4 spaces to clean it up.' },
+          { id: 'o8', title: 'Black Friday Plan', desc: 'Aunt Theresa is dragging you shopping at 3 AM.', effect: 'skip_turn', value: 1, flavor: 'Skip turn waiting in line.' },
+        ];
 
-        // Picked Up DOM Elements
-        const pickedUpTableBody = document.getElementById('pickedup-table-body');
-        const pickedUpCount = document.getElementById('pickedup-count');
-        
-        // NEW: Admin Panel DOM
-        const adminRosterList = document.getElementById('admin-roster-list');
-        const adminAddStudentBtn = document.getElementById('admin-add-student-btn');
-        const adminFirstName = document.getElementById('admin-first-name');
-        const adminLastName = document.getElementById('admin-last-name');
-        const adminGrade = document.getElementById('admin-grade');
-        const clearAllBtn = document.getElementById('clear-all-btn'); // New button
-        const clearPickedUpBtn = document.getElementById('clear-pickedup-btn'); // Moved button
+        const DEFENSIVE_DECK = [
+          { id: 'd1', title: 'Grandpa Prebeg\'s Wisdom', desc: 'He slipped you a $20 bill.', effect: 'move_forward', value: 3, flavor: 'Move forward 3 spaces quietly.' },
+          { id: 'd2', title: 'Aunt Rosie\'s Hug', desc: 'She blocked the haters for you.', effect: 'shield', value: 1, flavor: 'Block the next Offensive card.' },
+          { id: 'd3', title: 'Uncle Guy\'s Joke', desc: 'It was actually funny!', effect: 'move_forward', value: 2, flavor: 'Laughing moves you forward 2 spaces.' },
+          { id: 'd4', title: 'The Wishbone', desc: 'You beat Uncle Charlie!', effect: 'double_roll', value: 0, flavor: 'Roll two d4s next turn.' },
+          { id: 'd5', title: 'Hidden Sandwich', desc: 'The Moistmaker!', effect: 'shield', value: 1, flavor: 'Immune to next bad effect.' },
+          { id: 'd6', title: 'Football Nap', desc: 'Sleeping through the drama.', effect: 'move_forward', value: 2, flavor: 'Refreshed! Move 2 spaces.' },
+          { id: 'd7', title: 'Secret Wine Stash', desc: 'Found in the pantry.', effect: 'move_forward', value: 4, flavor: 'Liquid courage! Move 4 spaces.' },
+        ];
 
-        // NEW: Admin Group Management DOM
-        const adminGroupNameInput = document.getElementById('admin-group-name-input');
-        const adminGroupSearchInput = document.getElementById('admin-group-search-input');
-        const adminGroupSearchResults = document.getElementById('admin-group-search-results');
-        const adminGroupBuilderList = document.getElementById('admin-group-builder-list');
-        const adminSaveGroupBtn = document.getElementById('admin-save-group-btn');
-        const adminPermanentGroupList = document.getElementById('admin-permanent-group-list');
+        const COOL_SHADES_CARD = { id: 'special_cc', title: 'Cool Shades', desc: 'Whatever, man. Nothing bothers you.', effect: 'shield', value: 1, flavor: 'Role Ability: Immune to next bad effect.' };
 
-        // NEW: Edit Student Modal DOM
-        const editStudentModalBackdrop = document.getElementById('edit-student-modal-backdrop');
-        const modalEditStudentId = document.getElementById('modal-edit-student-id');
-        const modalEditFirstName = document.getElementById('modal-edit-first-name');
-        const modalEditLastName = document.getElementById('modal-edit-last-name');
-        const modalEditGrade = document.getElementById('modal-edit-grade');
-        const modalEditError = document.getElementById('modal-edit-error');
-        const modalEditCancelBtn = document.getElementById('modal-edit-cancel-btn');
-        const modalEditSaveBtn = document.getElementById('modal-edit-save-btn');
+        const GAME_PHASES = {
+          SETUP_COUNT: 'SETUP_COUNT',
+          SETUP_NAMES: 'SETUP_NAMES',
+          START_TURN: 'START_TURN',
+          ROLLING: 'ROLLING',
+          MOVING: 'MOVING',
+          BATTLE: 'BATTLE', 
+          EVENT_TRIGGER: 'EVENT_TRIGGER', 
+          DRAW_CHOICE: 'DRAW_CHOICE',
+          GAME_OVER: 'GAME_OVER',
+        };
 
-        // Modals
-        const passwordModalBackdrop = document.getElementById('password-modal-backdrop');
-        const passwordModalPrompt = document.getElementById('password-modal-prompt');
-        const modalCancelBtn = document.getElementById('modal-cancel-btn');
-        const modalConfirmBtn = document.getElementById('modal-confirm-btn');
-        const modalPasswordInput = document.getElementById('modal-password-input');
-        const modalError = document.getElementById('modal-error');
-        
-        const confirmationModalBackdrop = document.getElementById('confirmation-modal-backdrop');
-        const confirmationModalTitle = document.getElementById('confirmation-modal-title');
-        const confirmationModalPrompt = document.getElementById('confirmation-modal-prompt');
-        const confirmationModalCancelBtn = document.getElementById('confirmation-modal-cancel-btn');
-        const confirmationModalConfirmBtn = document.getElementById('confirmation-modal-confirm-btn');
+        const playSound = (type) => {
+          // Placeholder for sounds
+          console.log(`🔊 Sound: ${type}`);
+        };
 
-        // --- App State ---
-        let passwordModalAction = null; 
-        let confirmationModalAction = null;
-        let stagedSiblingGroup = []; 
-        let currentRoster = []; 
-        let stagedForGroupBuilding = []; // NEW: For admin group builder
-        let currentPermanentGroups = []; // NEW: To hold permanent groups
-        
-        // --- Firebase Globals ---
-        let app, auth, db, userId;
-        let q1ColRef, q2ColRef, q3ColRef, rosterColRef, pickedupColRef;
-        let permanentGroupsColRef; // NEW
-        const appId = firebaseConfig.projectId || 'default-carline-app';
+        // --- COMPONENTS ---
 
-        // --- Collection Names ---
-        const Q1_COLLECTION = 'queue_k5';
-        const Q2_COLLECTION = 'queue_siblings';
-        const Q3_COLLECTION = 'queue_walkers';
-        const PICKEDUP_COLLECTION = 'queue_pickedup';
-        const ROSTER_COLLECTION = 'ROSTER';
-        const PERMANENT_GROUPS_COLLECTION = 'permanent_groups'; // NEW
-
-        // --- Utility Functions ---
-        
-        function formatTimestamp(timestamp) {
-            if (!timestamp) return '...';
-            const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-            return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-        }
-        
-        function sanitize(str) {
-            if (!str) return "";
-            const temp = document.createElement('div');
-            temp.textContent = str;
-            return temp.innerHTML;
-        }
-
-        // --- Render Functions ---
-
-        function renderSearchResults(students, groups) {
-            let html = '';
-
-            // Render groups first
-            if (groups.length > 0) {
-                html += groups.map(group => {
-                    return `
-                    <div class="search-item group-result">
-                        <div>
-                            <span style="font-weight: 500;">${sanitize(group.groupName)}</span>
-                            <span style="color: var(--fg-gray); font-size: 0.8rem; margin-left: 4px;">(Permanent Group)</span>
-                        </div>
-                        <div class="search-item-actions">
-                            <button class="btn btn-green" data-action="add-permanent-group" data-group-id="${group.id}">Add to Sibling Queue</button>
-                        </div>
-                    </div>
-                    `;
-                }).join('');
-            }
-
-            // Render individual students
-            if (students.length > 0) {
-                html += students.map(student => {
-                    const fullName = `${student.firstName} ${student.lastName}`;
-                    return `
-                    <div class="search-item">
-                        <div>
-                            <span style="font-weight: 500;">${fullName}</span>
-                            <span style="color: var(--fg-gray); font-size: 0.8rem; margin-left: 4px;">(Gr: ${student.grade})</span>
-                        </div>
-                        <div class="search-item-actions">
-                            <button class="btn btn-blue" data-queue="1" data-name="${fullName}" data-grade="${student.grade}">K-5</button>
-                            <button class="btn btn-green" data-queue="2" data-name="${fullName}" data-grade="${student.grade}">6-8</button>
-                            <button class="btn btn-gray" data-queue="3" data-name="${fullName}" data-grade="${student.grade}">Walk</button>
-                            <button class="btn btn-purple" data-action="stage-group" data-name="${fullName}" data-grade="${student.grade}">Group</button>
-                        </div>
-                    </div>
-                    `;
-                }).join('');
-            }
-
-            if (html === '') {
-                searchResults.innerHTML = `<p style="padding: 0.5rem 0.75rem; color: var(--fg-gray);">No students or groups found.</p>`;
-                return;
-            }
-            
-            searchResults.innerHTML = html;
-        }
-
-        function renderStagedGroup() {
-            if (stagedSiblingGroup.length === 0) {
-                stagedList.innerHTML = `<p style="padding: 0.5rem 0.75rem; color: var(--fg-gray);">No students staged.</p>`;
-                return;
-            }
-            stagedList.innerHTML = stagedSiblingGroup.map((student, index) => {
-                return `
-                <div class="sibling-item">
-                    <span style="font-weight: 500;">${student.name} (Gr: ${student.grade})</span>
-                    <button class="remove-staged-btn" data-index="${index}" title="Remove" style="background: none; border: none; color: var(--red); cursor: pointer;">
-                        <svg class="w-4 h-4" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                    </button>
-                </div>
-                `;
-            }).join('');
-        }
-        
-        // NEW: Render for admin group builder
-        function renderGroupBuilderList() {
-            if (stagedForGroupBuilding.length === 0) {
-                adminGroupBuilderList.innerHTML = `<p style="padding: 0.5rem 0.75rem; color: var(--fg-gray);">No students staged for group.</p>`;
-                return;
-            }
-            adminGroupBuilderList.innerHTML = stagedForGroupBuilding.map((student, index) => {
-                const fullName = `${student.firstName} ${student.lastName}`;
-                return `
-                <div class="sibling-item">
-                    <span style="font-weight: 500;">${fullName} (Gr: ${student.grade})</span>
-                    <button class="remove-staged-builder-btn" data-index="${index}" title="Remove" style="background: none; border: none; color: var(--red); cursor: pointer;">
-                        <svg class="w-4 h-4" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                    </button>
-                </div>
-                `;
-            }).join('');
-        }
-
-        function renderQueueTable(tableBodyEl, countEl, queueName, docs) {
-            docs.sort((a, b) => (a.addedAt?.seconds || 0) - (b.addedAt?.seconds || 0));
-            countEl.textContent = `(${docs.length})`;
-            
-            if (docs.length === 0) {
-                tableBodyEl.innerHTML = `<tr><td colspan="3" style="text-align: center; color: var(--fg-gray);">Queue is empty.</td></tr>`;
-                return;
-            }
-            
-            tableBodyEl.innerHTML = docs.map(student => {
-                const highlightClass = student.isHighlighted ? 'highlighted' : '';
-                return `
-                <tr class="${highlightClass}">
-                    <td>${sanitize(student.name)} (${sanitize(student.grade)})</td>
-                    <td>${sanitize(student.note)}</td>
-                    <td class="actions-cell">
-                        <button class="action-btn btn-highlight" 
-                                data-action="highlight" 
-                                data-id="${student.id}"
-                                data-queue="${queueName}">
-                            H
-                        </button>
-                        <button class="action-btn btn-note" 
-                                data-action="add-note" 
-                                data-id="${student.id}"
-                                data-queue="${queueName}">
-                            Note
-                        </button>
-                        <button class="action-btn btn-delete" 
-                                data-action="dismiss-queue" 
-                                data-id="${student.id}"
-                                data-queue="${queueName}">
-                            Dismiss
-                        </button>
-                    </td>
-                </tr>
-                `;
-            }).join('');
-        }
-
-        function renderSiblingTable(docs) {
-            docs.sort((a, b) => (a.addedAt?.seconds || 0) - (b.addedAt?.seconds || 0));
-            
-            let studentCount = docs.reduce((count, doc) => {
-                return count + (doc.isGroup ? doc.students.length : 1);
-            }, 0);
-            q2Count.textContent = `(${studentCount})`;
-            
-            if (docs.length === 0) {
-                q2TableBody.innerHTML = `<tr><td colspan="2" style="text-align: center; color: var(--fg-gray);">Queue is empty.</td></tr>`;
-                return;
-            }
-            
-            q2TableBody.innerHTML = docs.map(student => {
-                let studentHtml = '';
-                if (student.isGroup) {
-                    studentHtml = '<strong style="color: var(--green);">GROUP:</strong><ul class="sibling-group-ul">' + 
-                                  student.students.map((s, index) => {
-                                      const highlightClass = s.isHighlighted ? 'highlighted' : '';
-                                      const noteHtml = s.note ? ` <i style="color: var(--blue); font-size: 0.8rem;">(${sanitize(s.note)})</i>` : '';
-                                      return `<li class="${highlightClass}">
-                                          <span>${sanitize(s.name)} (${sanitize(s.grade)})${noteHtml}</span>
-                                          <span class="actions-cell">
-                                              <button class="action-btn btn-highlight" 
-                                                      data-action="highlight-group-student"
-                                                      data-id="${student.id}"
-                                                      data-queue="${Q2_COLLECTION}"
-                                                      data-index="${index}">
-                                                  H
-                                              </button>
-                                              <button class="action-btn btn-note" 
-                                                      data-action="add-note-group"
-                                                      data-id="${student.id}"
-                                                      data-queue="${Q2_COLLECTION}"
-                                                      data-index="${index}">
-                                                  Note
-                                              </button>
-                                              <button class="action-btn btn-delete" 
-                                                      data-action="dismiss-group-student"
-                                                      data-id="${student.id}"
-                                                      data-queue="${Q2_COLLECTION}"
-                                                      data-index="${index}">
-                                                  X
-                                              </button>
-                                          </span>
-                                        </li>`;
-                                    }
-                                  ).join('') + '</ul>';
-                } else {
-                    const highlightClass = student.isHighlighted ? 'highlighted' : '';
-                    const noteHtml = student.note ? ` <i style="color: var(--blue); font-size: 0.8rem;">(${sanitize(student.note)})</i>` : '';
-                    studentHtml = `<span class="${highlightClass}">${sanitize(student.name)} (${sanitize(student.grade)})${noteHtml}</span>`;
-                }
-                
-                return `
-                <tr>
-                    <td>${studentHtml}</td>
-                    <td class="actions-cell">
-                        ${!student.isGroup ? `
-                        <button class="action-btn btn-highlight" 
-                                data-action="highlight" 
-                                data-id="${student.id}"
-                                data-queue="${Q2_COLLECTION}">
-                            H
-                        </button>
-                        <button class="action-btn btn-note" 
-                                data-action="add-note" 
-                                data-id="${student.id}"
-                                data-queue="${Q2_COLLECTION}">
-                            Note
-                        </button>
-                        ` : ''}
-                        <button class="action-btn btn-delete" 
-                                data-action="dismiss-queue" 
-                                data-id="${student.id}"
-                                data-queue="${Q2_COLLECTION}"
-                                title="Dismiss Entire Group/Student">
-                            Dismiss All
-                        </button>
-                    </td>
-                </tr>
-                `;
-            }).join('');
-        }
-
-        function renderPickedUpTable(docs) {
-            docs.sort((a, b) => (b.pickedUpAt?.seconds || 0) - (a.pickedUpAt?.seconds || 0));
-            pickedUpCount.textContent = `(${docs.length})`;
-            
-            if (docs.length === 0) {
-                pickedUpTableBody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--fg-gray);">No students picked up.</td></tr>`;
-                return;
-            }
-            
-            pickedUpTableBody.innerHTML = docs.map(student => {
-                return `
-                <tr>
-                    <td>${sanitize(student.name)}</td>
-                    <td>${sanitize(student.grade)}</td>
-                    <td>${formatTimestamp(student.pickedUpAt)}</td>
-                    <td>
-                        <button class="action-btn btn-delete" 
-                                data-action="remove-pickedup" 
-                                data-id="${student.id}"
-                                data-name="${sanitize(student.name)}">
-                            Remove
-                        </button>
-                    </td>
-                </tr>
-                `;
-            }).join('');
-        }
-        
-        /**
-         * NEW: Renders the Admin Roster Management list.
-         * @param {Array} roster - Array of student objects from the 'ROSTER' collection.
-         */
-        function renderAdminRoster(roster) {
-            if (roster.length === 0) {
-                adminRosterList.innerHTML = `<p style="padding: 0.5rem 0.75rem; color: var(--fg-gray);">Roster is empty.</p>`;
-                return;
-            }
-            adminRosterList.innerHTML = roster.map(student => {
-                return `
-                <div class="roster-item">
-                    <div>
-                        <span style="font-weight: 500;">${sanitize(student.firstName)} ${sanitize(student.lastName)}</span>
-                        <span style="color: var(--fg-gray); font-size: 0.8rem; margin-left: 4px;">(Gr: ${student.grade})</span>
-                    </div>
-                    <div class="roster-item-actions">
-                        <!-- NEW: Edit Button -->
-                        <button class="action-btn btn-blue" data-action="edit-roster-student" data-id="${student.id}">
-                            Edit
-                        </button>
-                        <button class="action-btn btn-delete" data-action="delete-roster-student" data-id="${student.id}">
-                            Delete
-                        </button>
-                    </div>
-                </div>
-                `;
-            }).join('');
-        }
-
-        // NEW: Render the list of permanent groups in admin panel
-        function renderPermanentGroups(groups) {
-            if (groups.length === 0) {
-                adminPermanentGroupList.innerHTML = `<p style="padding: 0.5rem 0.75rem; color: var(--fg-gray);">No permanent groups found.</p>`;
-                return;
-            }
-            adminPermanentGroupList.innerHTML = groups.map(group => {
-                // Find student names from currentRoster
-                const studentNames = group.students.map(studentId => {
-                    const student = currentRoster.find(s => s.id === studentId);
-                    return student ? `${student.firstName} ${student.lastName}` : 'Unknown Student';
-                });
-
-                return `
-                <div class="permanent-group-item">
-                    <div>
-                        <span style="font-weight: 500;">${sanitize(group.groupName)}</span>
-                        <ul>
-                            ${studentNames.map(name => `<li>${sanitize(name)}</li>`).join('')}
-                        </ul>
-                    </div>
-                    <button class="action-btn btn-delete" data-action="delete-permanent-group" data-id="${group.id}">
-                        Delete
-                    </button>
-                </div>
-                `;
-            }).join('');
-        }
-
-
-        // --- Firebase Actions ---
-
-        async function addStudentToQueue(queueNum, name, grade) {
-            let collection;
-            if (queueNum == 1) collection = q1ColRef;
-            else if (queueNum == 2) collection = q2ColRef;
-            else if (queueNum == 3) collection = q3ColRef;
-            else return;
-
-            try {
-                await addDoc(collection, {
-                    name: name,
-                    grade: grade,
-                    addedAt: serverTimestamp(),
-                    addedBy: userId,
-                    isHighlighted: false,
-                    note: ""
-                });
-            } catch (error) {
-                console.error("Error adding student: ", error);
-            }
-        }
-
-        async function addGroupToQueue(studentGroup) {
-            if (studentGroup.length === 0) return;
-
-            const studentsForFirestore = studentGroup.map(student => ({
-                name: student.name,
-                grade: student.grade,
-                isHighlighted: false,
-                note: ""
+        const Confetti = () => {
+          const [particles, setParticles] = useState([]);
+          
+          useEffect(() => {
+            const colors = ['#fcd34d', '#ef4444', '#3b82f6', '#10b981', '#f97316'];
+            const count = 100;
+            const newParticles = Array.from({ length: count }).map((_, i) => ({
+              id: i,
+              x: Math.random() * 100,
+              y: -10,
+              color: colors[Math.floor(Math.random() * colors.length)],
+              delay: Math.random() * 2,
+              duration: 3 + Math.random() * 2,
+              rotation: Math.random() * 360,
             }));
+            setParticles(newParticles);
+          }, []);
 
-            try {
-                await addDoc(q2ColRef, {
-                    isGroup: true,
-                    students: studentsForFirestore,
-                    addedAt: serverTimestamp(),
-                    addedBy: userId
-                });
-                
-                stagedSiblingGroup = [];
-                renderStagedGroup();
-            } catch (error) {
-                console.error("Error adding group to queue: ", error);
+          return (
+            <div className="fixed inset-0 pointer-events-none z-[60] overflow-hidden">
+              {particles.map(p => (
+                <div 
+                  key={p.id}
+                  className="absolute w-3 h-3 rounded-sm"
+                  style={{
+                    left: `${p.x}%`,
+                    top: `-20px`,
+                    backgroundColor: p.color,
+                    animation: `fall ${p.duration}s linear ${p.delay}s infinite`,
+                    transform: `rotate(${p.rotation}deg)`
+                  }}
+                />
+              ))}
+              <style jsx>{`
+                @keyframes fall {
+                  to { transform: translateY(110vh) rotate(720deg); }
+                }
+              `}</style>
+            </div>
+          );
+        };
+
+        const Card = ({ card, onClick, isSelected }) => (
+          <div 
+            onClick={onClick}
+            className={`
+              relative w-36 h-52 rounded-xl shadow-lg p-3 flex flex-col justify-between cursor-pointer transition-all transform duration-200 shrink-0
+              ${isSelected ? 'ring-4 ring-yellow-400 scale-105 z-10 -translate-y-4' : 'hover:scale-105 hover:-translate-y-2'}
+              ${OFFENSIVE_DECK.some(c => c.id === card.id) 
+                ? 'bg-gradient-to-br from-red-50 to-red-100 border-2 border-red-800' 
+                : card.id === 'special_cc'
+                  ? 'bg-gradient-to-br from-purple-50 to-purple-100 border-2 border-purple-800'
+                  : 'bg-gradient-to-br from-blue-50 to-blue-100 border-2 border-blue-800'}
+            `}
+          >
+            <div className={`
+              text-xs font-black text-center uppercase tracking-widest mb-2 border-b-2 pb-1
+              ${OFFENSIVE_DECK.some(c => c.id === card.id) 
+                ? 'border-red-200 text-red-900' 
+                : card.id === 'special_cc'
+                   ? 'border-purple-200 text-purple-900'
+                   : 'border-blue-200 text-blue-900'}
+            `}>
+              {OFFENSIVE_DECK.some(c => c.id === card.id) ? '⚔️ Offense' : card.id === 'special_cc' ? '😎 Ability' : '🛡️ Defense'}
+            </div>
+            <div className="text-sm font-extrabold leading-tight text-center text-gray-800">{card.title}</div>
+            <div className="text-[11px] text-gray-600 text-center italic my-2 leading-tight">{card.desc}</div>
+            <div className={`
+              mt-auto text-[10px] font-bold text-center rounded p-1.5 shadow-sm
+              ${OFFENSIVE_DECK.some(c => c.id === card.id) 
+                ? 'bg-red-200 text-red-900' 
+                : card.id === 'special_cc'
+                   ? 'bg-purple-200 text-purple-900'
+                   : 'bg-blue-200 text-blue-900'}
+            `}>
+              {card.flavor}
+            </div>
+          </div>
+        );
+
+        const PlayerToken = ({ player, isActive }) => (
+          <div className={`
+            w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center text-lg md:text-2xl shadow-lg border-2 relative transition-all duration-300 z-10 bg-white
+            ${player.color.border} ${isActive ? 'ring-4 ring-white ring-offset-2 ring-offset-amber-200 scale-110 z-20' : ''}
+          `} title={`${player.name} (${player.role.name})`}>
+            {player.icon}
+            {player.shield && (
+              <div className="absolute -top-3 -right-3 bg-blue-600 text-white rounded-full p-0.5 w-5 h-5 flex items-center justify-center text-[10px] shadow border border-white">
+                🛡️
+              </div>
+            )}
+          </div>
+        );
+
+        function PrebegSpanksGiving() {
+          const [phase, setPhase] = useState(GAME_PHASES.SETUP_COUNT);
+          const [playerCount, setPlayerCount] = useState(2);
+          const [playerNames, setPlayerNames] = useState(['', '', '', '']); 
+          const [playerRoles, setPlayerRoles] = useState(['cousin', 'glutton', 'tattle', 'fav']); 
+          const [players, setPlayers] = useState([]);
+          const [currentPlayerIdx, setCurrentPlayerIdx] = useState(0);
+          const [diceVal, setDiceVal] = useState(null);
+          const [logs, setLogs] = useState(["Welcome to Prebeg Spanks-Giving!"]);
+          const [selectedCard, setSelectedCard] = useState(null);
+          const [targetMode, setTargetMode] = useState(false);
+          const [showRules, setShowRules] = useState(false);
+          const [showIntroVideo, setShowIntroVideo] = useState(true);
+          const [activeEvent, setActiveEvent] = useState(null); 
+          const [battleState, setBattleState] = useState(null); 
+
+          const logEndRef = useRef(null);
+
+          const addLog = (msg) => {
+            setLogs(prev => [...prev, msg]);
+          };
+
+          useEffect(() => {
+            logEndRef.current?.scrollIntoView({ behavior: "smooth" });
+          }, [logs]);
+
+          const initNameSetup = (count) => {
+            playSound('click');
+            setPlayerCount(count);
+            const defaults = Array.from({ length: 4 }).map((_, i) => `Player ${i + 1}`);
+            setPlayerNames(defaults);
+            const roleKeys = Object.keys(ROLES);
+            const defaultRoles = Array.from({ length: 4 }).map((_, i) => roleKeys[i % roleKeys.length].toLowerCase());
+            setPlayerRoles(defaultRoles);
+            setPhase(GAME_PHASES.SETUP_NAMES);
+          };
+
+          const handleNameChange = (index, value) => {
+            const newNames = [...playerNames];
+            newNames[index] = value;
+            setPlayerNames(newNames);
+          };
+
+          const handleRoleChange = (index, roleKey) => {
+            const newRoles = [...playerRoles];
+            newRoles[index] = roleKey;
+            setPlayerRoles(newRoles);
+          };
+
+          const finalizeSetup = () => {
+            playSound('start');
+            const newPlayers = Array.from({ length: playerCount }).map((_, i) => {
+              const roleKey = Object.keys(ROLES).find(key => ROLES[key].id === playerRoles[i]);
+              const roleData = ROLES[roleKey];
+              const p = {
+                id: i,
+                name: playerNames[i].trim() || `Player ${i + 1}`,
+                color: COLORS[i],
+                icon: COLORS[i].icon,
+                role: roleData,
+                pos: 0,
+                cards: [],
+                shield: false,
+                skipTurn: false,
+                doubleRoll: false,
+              };
+              if (roleData.id === 'fav') p.shield = true;
+              if (roleData.id === 'cousin') p.cards.push(COOL_SHADES_CARD);
+              return p;
+            });
+            setPlayers(newPlayers);
+            setPhase(GAME_PHASES.START_TURN);
+            addLog("🦃 The Turkey is in the oven! Game Start!");
+            addLog(`👉 ${newPlayers[0].name}'s turn begins.`);
+          };
+
+          const rollDice = () => {
+            playSound('roll');
+            const player = players[currentPlayerIdx];
+            let rolls = 0;
+            const interval = setInterval(() => {
+              setDiceVal(Math.floor(Math.random() * 4) + 1);
+              rolls++;
+              if (rolls > 10) {
+                clearInterval(interval);
+                finalizeRoll(player);
+              }
+            }, 50);
+          };
+
+          const finalizeRoll = (player) => {
+            let roll = Math.floor(Math.random() * 4) + 1;
+            let msg = `${player.name} rolled a ${roll}!`;
+            if (player.doubleRoll) {
+              const roll2 = Math.floor(Math.random() * 4) + 1;
+              roll += roll2;
+              msg = `${player.name} used Wishbone! Rolled ${roll - roll2} + ${roll2} for a total of ${roll}!`;
+              const updated = [...players];
+              updated[currentPlayerIdx].doubleRoll = false;
+              setPlayers(updated);
             }
-        }
+            setDiceVal(roll);
+            addLog(msg);
+            setTimeout(() => {
+              animateMovement(currentPlayerIdx, roll);
+            }, 500);
+          };
 
-        // NEW: Add group from permanent group definition
-        async function addPermanentGroupToQueue(groupId) {
-            const group = currentPermanentGroups.find(g => g.id === groupId);
-            if (!group) return;
+          const handleCheat = () => {
+            if (phase !== GAME_PHASES.START_TURN) return;
+            playSound('click');
+            const isSuccess = Math.random() > 0.8; 
+            const player = players[currentPlayerIdx];
+            const reward = 5;
+            const penalty = 5;
 
-            // Map student IDs to student objects from the roster
-            const studentGroup = group.students.map(studentId => {
-                const student = currentRoster.find(s => s.id === studentId);
-                if (!student) return null;
-                return {
-                    name: `${student.firstName} ${student.lastName}`,
-                    grade: student.grade
-                };
-            }).filter(s => s !== null); // Filter out any nulls if a student was deleted
-
-            if (studentGroup.length > 0) {
-                // Use the existing addGroupToQueue function, but pass the resolved student data
-                // This re-uses the logic for creating the group in queue_siblings
-                 await addDoc(q2ColRef, {
-                    isGroup: true,
-                    students: studentGroup.map(s => ({ ...s, isHighlighted: false, note: "" })),
-                    addedAt: serverTimestamp(),
-                    addedBy: userId
+            if (isSuccess) {
+              playSound('success');
+              addLog(`🕵️‍♂️ SNEAKY! ${player.name} stole extra stuffing and nobody noticed!`);
+              addLog(`✨ Moving forward ${reward} spaces!`);
+              animateMovement(currentPlayerIdx, reward);
+            } else {
+              playSound('fail');
+              addLog(`👀 CAUGHT! ${player.name} tried to cheat! Grandma saw everything.`);
+              addLog(`👵 Grandma Ann: "Go sit at the card table!" (-${penalty} spaces)`);
+              
+              const tattleTales = players.filter(p => p.id !== player.id && p.role.id === 'tattle');
+              let bonusAnimations = [];
+              if (tattleTales.length > 0) {
+                tattleTales.forEach(tt => {
+                   addLog(`📢 ${tt.name} (Tattletale) saw it! Moving forward 3 spaces!`);
+                   bonusAnimations.push(tt.id);
                 });
-            }
-        }
+              }
 
-        async function dismissStudent(queueName, docId) {
-            try {
-                const docRef = doc(db, `/artifacts/${appId}/public/data/${queueName}/${docId}`);
-                const studentDoc = await getDoc(docRef);
-                
-                if (studentDoc.exists()) {
-                    const studentData = studentDoc.data();
-                    
-                    if (studentData.isGroup) {
-                        const addPromises = studentData.students.map(student => {
-                            return addDoc(pickedupColRef, {
-                                name: student.name,
-                                grade: student.grade,
-                                pickedUpAt: serverTimestamp(),
-                                addedBy: userId
-                            });
-                        });
-                        await Promise.all(addPromises);
+              animateMovement(currentPlayerIdx, -penalty, () => {
+                 if (bonusAnimations.length > 0) {
+                   setPlayers(prev => {
+                     const copy = [...prev];
+                     bonusAnimations.forEach(id => {
+                       copy[id].pos = Math.min(BOARD_SIZE, copy[id].pos + 3);
+                     });
+                     return copy;
+                   });
+                   playSound('success');
+                 }
+                 setTimeout(() => {
+                   endTurn();
+                 }, 1500);
+              });
+            }
+          };
+
+          const animateMovement = (pIdx, steps, onComplete = null) => {
+            setPhase(GAME_PHASES.MOVING);
+            let stepsRemaining = Math.abs(steps);
+            const direction = steps > 0 ? 1 : -1;
+            
+            const moveInterval = setInterval(() => {
+              setPlayers(prevPlayers => {
+                const newPlayers = [...prevPlayers];
+                let nextPos = newPlayers[pIdx].pos + direction;
+                if (nextPos > BOARD_SIZE) nextPos = BOARD_SIZE;
+                if (nextPos < 0) nextPos = 0;
+                newPlayers[pIdx].pos = nextPos;
+                return newPlayers;
+              });
+              
+              playSound('step');
+              stepsRemaining--;
+              
+              if (stepsRemaining <= 0) {
+                clearInterval(moveInterval);
+                setTimeout(() => {
+                  if (onComplete) {
+                    onComplete();
+                  } else {
+                    handleMovementEnd(pIdx);
+                  }
+                }, 300);
+              }
+            }, 300);
+          };
+
+          const handleMovementEnd = (pIdx) => {
+            const player = players[pIdx]; 
+            const finalPos = player.pos;
+            if (finalPos >= BOARD_SIZE) {
+              setPhase(GAME_PHASES.GAME_OVER);
+              playSound('win');
+              addLog(`🏆 ${player.name} REACHED THE END! VICTORY! 🏆`);
+              return;
+            }
+            if (finalPos > 0 && finalPos < BOARD_SIZE) {
+              const defenders = players.filter(p => p.id !== player.id && p.pos === finalPos);
+              if (defenders.length > 0) {
+                startBattle(player, defenders[0]);
+                return;
+              }
+            }
+            checkPostMove(pIdx);
+          };
+
+          const checkPostMove = (pIdx) => {
+            const rollEvent = Math.random();
+            if (rollEvent < 0.25) { 
+              triggerRandomEvent(players[pIdx]);
+            } else {
+              setPhase(GAME_PHASES.DRAW_CHOICE);
+              addLog(`${players[pIdx].name}, choose a pile!`);
+            }
+          };
+
+          const startBattle = (attacker, defender) => {
+            playSound('alert');
+            setBattleState({ attacker, defender, step: 'INTRO', p1Choice: null, p2Choice: null, winner: null });
+            setPhase(GAME_PHASES.BATTLE);
+            addLog(`⚔️ BATTLE! ${attacker.name} landed on ${defender.name}!`);
+          };
+
+          const handleBattleChoice = (choice) => {
+            playSound('click');
+            const { step, p1Choice } = battleState;
+            if (step === 'P1') {
+              setBattleState(prev => ({ ...prev, p1Choice: choice, step: 'SWITCH' }));
+            } else if (step === 'P2') {
+              resolveBattle(p1Choice, choice);
+            }
+          };
+
+          const resolveBattle = (c1, c2) => {
+            let winnerId = null;
+            if (c1 === c2) winnerId = 'tie';
+            else if ((c1 === 'rock' && c2 === 'scissors') || (c1 === 'paper' && c2 === 'rock') || (c1 === 'scissors' && c2 === 'paper')) {
+              winnerId = battleState.attacker.id;
+            } else {
+              winnerId = battleState.defender.id;
+            }
+            setBattleState(prev => ({ ...prev, p2Choice: c2, step: 'RESULT', winner: winnerId }));
+            if (winnerId && winnerId !== 'tie') playSound('win');
+            else playSound('fail');
+          };
+
+          const finalizeBattle = () => {
+            const { winner, attacker, defender } = battleState;
+            if (winner === 'tie') {
+              addLog("🤝 It was a tie! Rematch!");
+              setBattleState(prev => ({ ...prev, step: 'P1', p1Choice: null, p2Choice: null, winner: null }));
+            } else {
+              const loserId = winner === attacker.id ? defender.id : attacker.id;
+              const winnerName = winner === attacker.id ? attacker.name : defender.name;
+              const loserName = winner === attacker.id ? defender.name : attacker.name;
+              addLog(`🏆 ${winnerName} won the battle! ${loserName} pushed back.`);
+              const newPlayers = [...players];
+              const loserIdx = newPlayers.findIndex(p => p.id === loserId);
+              newPlayers[loserIdx].pos = Math.max(0, newPlayers[loserIdx].pos - 1);
+              setPlayers(newPlayers);
+              setBattleState(null);
+              checkPostMove(currentPlayerIdx);
+            }
+          };
+
+          const triggerRandomEvent = (player) => {
+            playSound('alert');
+            const isGood = Math.random() > 0.5;
+            if (isGood) {
+              setActiveEvent({
+                type: 'saint',
+                title: 'The Saint, Uncle Mike',
+                desc: 'Uncle Mike showed up with extra stuffing! He blesses your turn.',
+                effect: () => {
+                  const buff = Math.random() > 0.5 ? 'move' : 'shield';
+                  const newPlayers = [...players];
+                  const idx = newPlayers.findIndex(p => p.id === player.id);
+                  if (buff === 'move') {
+                    const steps = 3;
+                    newPlayers[idx].pos = Math.min(BOARD_SIZE, newPlayers[idx].pos + steps);
+                    addLog(`😇 Uncle Mike moved ${player.name} forward ${steps} spaces!`);
+                  } else {
+                    newPlayers[idx].shield = true;
+                    addLog(`😇 Uncle Mike gave ${player.name} a Shield!`);
+                  }
+                  setPlayers(newPlayers);
+                }
+              });
+            } else {
+              setActiveEvent({
+                type: 'bad',
+                title: 'Bad Marty',
+                desc: 'Bad Marty crashed the party! He touched the remote.',
+                effect: () => {
+                  const debuff = Math.random() > 0.5 ? 'back' : 'discard';
+                  const newPlayers = [...players];
+                  const idx = newPlayers.findIndex(p => p.id === player.id);
+                  if (debuff === 'back') {
+                    const steps = 3;
+                    newPlayers[idx].pos = Math.max(0, newPlayers[idx].pos - steps);
+                    addLog(`😈 Bad Marty pushed ${player.name} back ${steps} spaces!`);
+                  } else {
+                    if (newPlayers[idx].cards.length > 0) {
+                      newPlayers[idx].cards.pop();
+                      addLog(`😈 Bad Marty stole a card from ${player.name}!`);
                     } else {
-                        await addDoc(pickedupColRef, {
-                            name: studentData.name,
-                            grade: studentData.grade,
-                            pickedUpAt: serverTimestamp(),
-                            addedBy: userId
-                        });
+                      newPlayers[idx].pos = Math.max(0, newPlayers[idx].pos - 1); 
+                      addLog(`😈 Bad Marty pushed ${player.name} back 1 space!`);
                     }
-                    await deleteDoc(docRef);
+                  }
+                  setPlayers(newPlayers);
                 }
-            } catch (error) {
-                console.error("Error dismissing student: ", error);
+              });
             }
-        }
+            setPhase(GAME_PHASES.EVENT_TRIGGER);
+          };
 
-        async function dismissGroupStudent(queueName, docId, studentIndex) {
-            try {
-                const docRef = doc(db, `/artifacts/${appId}/public/data/${queueName}/${docId}`);
-                const studentDoc = await getDoc(docRef);
+          const resolveEvent = () => {
+            activeEvent.effect();
+            setActiveEvent(null);
+            setPhase(GAME_PHASES.DRAW_CHOICE);
+          };
 
-                if (!studentDoc.exists()) return;
+          const drawCard = (type) => {
+            playSound('click');
+            const deck = type === 'offense' ? OFFENSIVE_DECK : DEFENSIVE_DECK;
+            const randomCard = deck[Math.floor(Math.random() * deck.length)];
+            const newPlayers = [...players];
+            newPlayers[currentPlayerIdx].cards.push(randomCard);
+            setPlayers(newPlayers);
+            addLog(`${newPlayers[currentPlayerIdx].name} drew a card from the ${type} pile.`);
+            endTurn();
+          };
 
-                let students = studentDoc.data().students;
-                const studentToDismiss = students[studentIndex];
+          const playCard = (cardIndex) => {
+            playSound('click');
+            setSelectedCard({ ...players[currentPlayerIdx].cards[cardIndex], index: cardIndex });
+            setTargetMode(true);
+          };
 
-                if (!studentToDismiss) return;
+          const executeCardEffect = (targetId) => {
+            const sourcePlayer = players[currentPlayerIdx];
+            const card = selectedCard;
+            const newPlayers = [...players];
+            const target = newPlayers[targetId];
+            let blocked = false;
 
-                await addDoc(pickedupColRef, {
-                    name: studentToDismiss.name,
-                    grade: studentToDismiss.grade,
-                    pickedUpAt: serverTimestamp(),
-                    addedBy: userId
-                });
+            if (targetId !== currentPlayerIdx && target.shield && (OFFENSIVE_DECK.some(c => c.id === card.id))) {
+              blocked = true;
+              target.shield = false; 
+              addLog(`🛡️ ${target.name} blocked ${sourcePlayer.name}'s ${card.title}!`);
+              playSound('shield');
+            }
 
-                students.splice(studentIndex, 1);
-
-                if (students.length === 0) {
-                    await deleteDoc(docRef);
-                } else {
-                    await updateDoc(docRef, { students: students });
+            if (!blocked) {
+              if (card.effect === 'skip_turn' && target.role.id === 'glutton') {
+                addLog(`🍗 ${target.name} (The Glutton) is immune to Skip Turn! Effect blocked.`);
+                playSound('fail');
+              } else {
+                addLog(`🃏 ${sourcePlayer.name} played "${card.title}" on ${target.name}.`);
+                playSound('success');
+                switch (card.effect) {
+                  case 'move_forward': target.pos = Math.min(BOARD_SIZE, target.pos + card.value); addLog(`${target.name} moved forward ${card.value} spaces.`); break;
+                  case 'move_back': target.pos = Math.max(0, target.pos - card.value); addLog(`${target.name} was pushed back ${card.value} spaces.`); break;
+                  case 'skip_turn': target.skipTurn = true; addLog(`${target.name} will skip their next turn.`); break;
+                  case 'shield': target.shield = true; addLog(`${target.name} is now shielded.`); break;
+                  case 'double_roll': target.doubleRoll = true; addLog(`${target.name} will roll double next turn.`); break;
+                  case 'swap': 
+                    const tempPos = sourcePlayer.pos;
+                    newPlayers[currentPlayerIdx].pos = target.pos;
+                    newPlayers[targetId].pos = tempPos;
+                    addLog(`${sourcePlayer.name} swapped places with ${target.name}!`);
+                    break;
                 }
-            } catch (error) {
-                console.error("Error dismissing group student: ", error);
+              }
             }
-        }
+            newPlayers[currentPlayerIdx].cards.splice(card.index, 1);
+            setPlayers(newPlayers);
+            setTargetMode(false);
+            setSelectedCard(null);
+          };
 
-        async function clearPickedUpList() {
-            try {
-                const snapshot = await getDocs(pickedupColRef);
-                const deletePromises = snapshot.docs.map(doc => deleteDoc(doc.ref));
-                await Promise.all(deletePromises);
-            } catch (error) {
-                console.error("Error clearing picked up list: ", error);
+          const endTurn = () => {
+            let nextIdx = (currentPlayerIdx + 1) % players.length;
+            let checks = 0;
+            while (players[nextIdx].skipTurn && checks < players.length) {
+              addLog(`💤 ${players[nextIdx].name} is sleeping off the turkey (Skipped).`);
+              const newPlayers = [...players];
+              newPlayers[nextIdx].skipTurn = false;
+              setPlayers(newPlayers);
+              nextIdx = (nextIdx + 1) % players.length;
+              checks++;
             }
-        }
-        
-        /**
-         * NEW: Clears all documents from all three queues.
-         */
-        async function clearAllQueues() {
-            console.log("Clearing all queues...");
-            const collectionsToClear = [q1ColRef, q2ColRef, q3ColRef];
-            try {
-                const deletePromises = [];
-                for (const colRef of collectionsToClear) {
-                    const snapshot = await getDocs(colRef);
-                    snapshot.docs.forEach(doc => {
-                        deletePromises.push(deleteDoc(doc.ref));
-                    });
-                }
-                await Promise.all(deletePromises);
-                console.log("All queues cleared.");
-            } catch (error) {
-                console.error("Error clearing all queues: ", error);
+            setCurrentPlayerIdx(nextIdx);
+            setPhase(GAME_PHASES.START_TURN);
+            setDiceVal(null);
+            addLog(`👉 It is now ${players[nextIdx].name}'s turn.`);
+          };
+
+          const getPathD = () => {
+            let path = `M `; 
+            for (let i = 0; i <= BOARD_SIZE; i++) {
+               let row = Math.floor(i / GRID_COLS);
+               let col = (row % 2 === 0) ? i % GRID_COLS : (GRID_COLS - 1) - (i % GRID_COLS);
+               const x = 10 + (col * 20);
+               const y = 8.33 + (row * (100/GRID_ROWS));
+               path += `${x} ${y}`;
+               if (i < BOARD_SIZE) path += " L ";
             }
-        }
+            return path;
+          };
 
-        async function removePickedUpStudent(docId) {
-            try {
-                const docRef = doc(db, pickedupColRef.path, docId);
-                await deleteDoc(docRef);
-            } catch (error) {
-                console.error("Error removing picked up student: ", error);
-            }
-        }
-        
-        async function toggleHighlight(queueName, docId) {
-            try {
-                const docRef = doc(db, `/artifacts/${appId}/public/data/${queueName}/${docId}`);
-                const studentDoc = await getDoc(docRef);
-                if (studentDoc.exists()) {
-                    const currentHighlight = studentDoc.data().isHighlighted || false;
-                    await updateDoc(docRef, { isHighlighted: !currentHighlight });
-                }
-            } catch (error) {
-                console.error("Error toggling highlight: ", error);
-            }
-        }
+          const renderBoard = () => {
+            const gridCells = [];
+            for (let r = 0; r < GRID_ROWS; r++) {
+               for (let c = 0; c < GRID_COLS; c++) {
+                  const visualIndex = r * GRID_COLS + c;
+                  let logicalIndex = (r % 2 === 0) ? r * GRID_COLS + c : r * GRID_COLS + (GRID_COLS - 1 - c);
 
-        async function toggleGroupStudentHighlight(queueName, docId, studentIndex) {
-            try {
-                const docRef = doc(db, `/artifacts/${appId}/public/data/${queueName}/${docId}`);
-                const studentDoc = await getDoc(docRef);
+                  if (logicalIndex > BOARD_SIZE) {
+                    gridCells.push(<div key={visualIndex} className="opacity-0"></div>);
+                    continue;
+                  }
 
-                if (studentDoc.exists()) {
-                    const studentData = studentDoc.data();
-                    const students = studentData.students;
-                    
-                    if (students && students[studentIndex]) {
-                        students[studentIndex].isHighlighted = !students[studentIndex].isHighlighted;
-                    }
-                    
-                    await updateDoc(docRef, { students: students });
-                }
-            } catch (error) {
-                console.error("Error toggling group student highlight: ", error);
-            }
-        }
-        
-        async function updateStudentNote(queueName, docId, studentIndex, currentNote) {
-            const newNote = prompt("Enter note (or leave blank to clear):", currentNote);
-            
-            if (newNote === null) {
-                return;
-            }
-            
-            try {
-                const docRef = doc(db, `/artifacts/${appId}/public/data/${queueName}/${docId}`);
-                
-                if (studentIndex === null || studentIndex === undefined) {
-                    await updateDoc(docRef, { note: newNote.trim() });
-                } else {
-                    const studentDoc = await getDoc(docRef);
-                    if (studentDoc.exists()) {
-                        const studentData = studentDoc.data();
-                        const students = studentData.students;
-                        
-                        if (students && students[studentIndex]) {
-                            students[studentIndex].note = newNote.trim();
-                        }
-                        
-                        await updateDoc(docRef, { students: students });
-                    }
-                }
-            } catch (error) {
-                console.error("Error updating note: ", error);
-            }
-        }
+                  const occupants = players.filter(p => p.pos === logicalIndex);
+                  const isStart = logicalIndex === 0;
+                  const isEnd = logicalIndex === BOARD_SIZE;
+                  const special = SPECIAL_TILES[logicalIndex];
 
-        /**
-         * NEW: Adds a student to the main ROSTER.
-         */
-        async function addRosterStudent(firstName, lastName, grade) {
-            try {
-                await addDoc(rosterColRef, {
-                    firstName: firstName,
-                    lastName: lastName,
-                    grade: grade
-                });
-                // Clear fields
-                adminFirstName.value = '';
-                adminLastName.value = '';
-                adminGrade.value = '';
-            } catch (error) {
-                console.error("Error adding student to roster: ", error);
-            }
-        }
+                  let tileStyle = 'bg-white border-gray-300'; 
+                  let content = (
+                    <span className="absolute top-1 left-2 text-[10px] md:text-xs font-bold text-gray-400">
+                      {logicalIndex}
+                    </span>
+                  );
 
-        /**
-         * NEW: Updates a student in the main ROSTER.
-         */
-        async function updateRosterStudent(docId, firstName, lastName, grade) {
-            try {
-                const docRef = doc(db, rosterColRef.path, docId);
-                await updateDoc(docRef, {
-                    firstName: firstName,
-                    lastName: lastName,
-                    grade: grade
-                });
-            } catch (error) {
-                console.error("Error updating roster student: ", error);
-            }
-        }
+                  if (isStart) {
+                    tileStyle = 'bg-amber-100 border-amber-400 ring-4 ring-amber-200';
+                    content = <span className="text-[10px] font-black text-amber-900 uppercase tracking-wider">Start</span>;
+                  } else if (isEnd) {
+                    tileStyle = 'bg-orange-600 border-orange-800 ring-4 ring-orange-400 text-white';
+                    content = (
+                      <div className="flex flex-col items-center">
+                        <Drumstick className="w-5 h-5 md:w-8 md:h-8 animate-pulse" />
+                        <span className="text-[9px] md:text-[10px] font-black uppercase">Feast!</span>
+                      </div>
+                    );
+                  } else if (special) {
+                    tileStyle = 'bg-amber-50 border-amber-200';
+                    content = (
+                        <>
+                          <span className="absolute top-1 left-2 text-[10px] md:text-xs font-bold text-amber-800/50">{logicalIndex}</span>
+                          <div className="flex flex-col items-center opacity-80 mt-1">
+                            <span className="text-lg md:text-2xl">{special.icon}</span>
+                            <span className="text-[8px] md:text-[9px] font-bold text-amber-900 leading-none uppercase">{special.label}</span>
+                          </div>
+                        </>
+                    );
+                  }
 
-        /**
-         * NEW: Deletes a single student from the main ROSTER.
-         * @param {string} docId - The Firestore document ID.
-         */
-        async function deleteRosterStudent(docId) {
-             console.log(`Deleting roster student: ${docId}`);
-             try {
-                await deleteDoc(doc(db, rosterColRef.path, docId));
-                console.log("Student deleted from roster.");
-            } catch (error) {
-                console.error("Error deleting student: ", error);
-            }
-        }
-
-        /**
-         * NEW: Saves a new permanent group to Firestore.
-         */
-        async function savePermanentGroup(groupName, studentIds) {
-            if (!groupName || studentIds.length < 2) {
-                console.warn("Group must have a name and at least 2 students.");
-                return;
-            }
-            try {
-                await addDoc(permanentGroupsColRef, {
-                    groupName: groupName,
-                    students: studentIds // Array of roster doc IDs
-                });
-                // Clear builder
-                adminGroupNameInput.value = '';
-                stagedForGroupBuilding = [];
-                renderGroupBuilderList();
-            } catch (error) {
-                console.error("Error saving permanent group: ", error);
-            }
-        }
-
-        /**
-         * NEW: Deletes a permanent group from Firestore.
-         */
-        async function deletePermanentGroup(docId) {
-            console.log(`Deleting permanent group: ${docId}`);
-            try {
-                await deleteDoc(doc(db, permanentGroupsColRef.path, docId));
-                console.log("Permanent group deleted.");
-            } catch (error) {
-                console.error("Error deleting permanent group: ", error);
-            }
-        }
-
-
-        // --- Modal Functions ---
-        
-        function openPasswordModal(action, promptText, colorClass) {
-            passwordModalAction = action;
-            passwordModalPrompt.textContent = promptText;
-            
-            modalConfirmBtn.className = "btn"; // Reset
-            modalConfirmBtn.classList.add(colorClass);
-
-            modalPasswordInput.value = '';
-            modalError.style.display = 'none';
-            passwordModalBackdrop.style.display = 'flex';
-            modalPasswordInput.focus();
-        }
-        
-        function closePasswordModal() {
-            passwordModalBackdrop.style.display = 'none';
-            passwordModalAction = null;
-        }
-
-        // NEW: Edit Student Modal Functions
-        function openEditStudentModal(docId) {
-            const student = currentRoster.find(s => s.id === docId);
-            if (!student) return;
-
-            modalEditStudentId.value = docId;
-            modalEditFirstName.value = student.firstName;
-            modalEditLastName.value = student.lastName;
-            modalEditGrade.value = student.grade;
-            
-            modalEditError.style.display = 'none';
-            editStudentModalBackdrop.style.display = 'flex';
-            modalEditFirstName.focus();
-        }
-        
-        function closeEditStudentModal() {
-            editStudentModalBackdrop.style.display = 'none';
-        }
-
-        async function handleEditStudentSave() {
-            const docId = modalEditStudentId.value;
-            const fName = modalEditFirstName.value.trim();
-            const lName = modalEditLastName.value.trim();
-            const grade = modalEditGrade.value.trim().toUpperCase();
-
-            if (!docId || !fName || !lName || !grade) {
-                modalEditError.style.display = 'block';
-                return;
-            }
-
-            await updateRosterStudent(docId, fName, lName, grade);
-            closeEditStudentModal();
-        }
-
-        function openConfirmationModal(title, prompt, actionPayload) {
-            confirmationModalTitle.textContent = title;
-            confirmationModalPrompt.textContent = prompt;
-            confirmationModalAction = actionPayload;
-            confirmationModalBackdrop.style.display = 'flex';
-        }
-
-        function closeConfirmationModal() {
-            confirmationModalBackdrop.style.display = 'none';
-            confirmationModalAction = null;
-        }
-
-        async function handleConfirmationConfirm() {
-            if (!confirmationModalAction) return;
-
-            const { action, docId, queue, studentIndex } = confirmationModalAction;
-            
-            // Actions that DON'T require password
-            if (action === 'removePickedUp') {
-                await removePickedUpStudent(docId);
-                closeConfirmationModal();
-                return; 
-            }
-            if (action === 'dismissGroupStudent') {
-                await dismissGroupStudent(queue, docId, studentIndex);
-                closeConfirmationModal();
-                return; 
-            }
-            
-            // Actions that DO require password
-            openPasswordModal(
-                { ...confirmationModalAction, originalAction: confirmationModalAction.action }, 
-                `Enter password to confirm: ${confirmationModalTitle.textContent}`,
-                'btn-red'
-            );
-            
-            closeConfirmationModal(); 
-        }
-        
-        async function handlePasswordConfirm() {
-            const password = modalPasswordInput.value;
-            if (password !== 'doral') {
-                modalError.style.display = 'block';
-                modalError.textContent = "Incorrect password.";
-                return;
-            }
-            
-            if (!passwordModalAction) return;
-            
-            const { originalAction, docId, queue, action } = passwordModalAction;
-            
-            if (originalAction === 'dismissQueue') {
-                await dismissStudent(queue, docId);
-            } else if (action === 'clearPickedUp') {
-                await clearPickedUpList();
-            } else if (action === 'clearAllQueues') { // NEW
-                await clearAllQueues();
-            } else if (originalAction === 'deleteRosterStudent') { // NEW
-                await deleteRosterStudent(docId);
-            } else if (originalAction === 'deletePermanentGroup') { // NEW
-                await deletePermanentGroup(docId);
-            }
-            
-            closePasswordModal();
-        }
-
-        // --- Firebase Setup ---
-        async function setupFirebase() {
-            try {
-                app = initializeApp(firebaseConfig);
-                auth = getAuth(app);
-                db = getFirestore(app);
-                setLogLevel('Debug'); 
-
-                authStatus.textContent = "Authenticating...";
-                await signInAnonymously(auth);
-
-                onAuthStateChanged(auth, (user) => {
-                    if (user) {
-                        userId = user.uid;
-                        authStatus.textContent = "Connected";
-                        authStatus.classList.add('connected');
-                        setupListeners();
-                    } else {
-                        authStatus.textContent = "Connection Failed. Not Authenticated.";
-                        authStatus.classList.add('disconnected');
-                    }
-                });
-            } catch (error) {
-                console.error("Firebase Initialization Error: ", error);
-                authStatus.textContent = "Connection Failed. Check console.";
-                authStatus.classList.add('disconnected');
-            }
-        }
-        
-        function setupListeners() {
-            if (!db) return; 
-
-            q1ColRef = collection(db, `/artifacts/${appId}/public/data/${Q1_COLLECTION}`);
-            q2ColRef = collection(db, `/artifacts/${appId}/public/data/${Q2_COLLECTION}`);
-            q3ColRef = collection(db, `/artifacts/${appId}/public/data/${Q3_COLLECTION}`);
-            pickedupColRef = collection(db, `/artifacts/${appId}/public/data/${PICKEDUP_COLLECTION}`);
-            rosterColRef = collection(db, `/artifacts/${appId}/public/data/${ROSTER_COLLECTION}`);
-            permanentGroupsColRef = collection(db, `/artifacts/${appId}/public/data/${PERMANENT_GROUPS_COLLECTION}`); // NEW
-
-            // Listeners
-            onSnapshot(query(q1ColRef), (snapshot) => {
-                const students = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                renderQueueTable(q1TableBody, q1Count, Q1_COLLECTION, students);
-            }, (error) => console.error("Q1 Snapshot Error:", error));
-
-            onSnapshot(query(q2ColRef), (snapshot) => {
-                const students = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                renderSiblingTable(students);
-            }, (error) => console.error("Q2 Snapshot Error:", error));
-
-            onSnapshot(query(q3ColRef), (snapshot) => {
-                const students = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                renderQueueTable(q3TableBody, q3Count, Q3_COLLECTION, students);
-            }, (error) => console.error("Q3 Snapshot Error:", error));
-            
-            onSnapshot(query(pickedupColRef), (snapshot) => {
-                const students = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                renderPickedUpTable(students);
-            }, (error) => console.error("PickedUp Snapshot Error:", error));
-
-            onSnapshot(query(rosterColRef), (snapshot) => {
-                const students = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                students.sort((a, b) => {
-                    const lastCompare = (a.lastName || '').localeCompare(b.lastName || '');
-                    if (lastCompare !== 0) return lastCompare;
-                    return (a.firstName || '').localeCompare(b.firstName || '');
-                });
-                
-                currentRoster = students; 
-                
-                if (searchInput.value.trim().length > 0) {
-                    filterStudents(searchInput.value.trim());
-                }
-                
-                // NEW: Always re-render the admin roster list
-                if (adminView.style.display !== 'none') {
-                    renderAdminRoster(currentRoster);
-                    // Re-render permanent groups too, as they rely on roster names
-                    renderPermanentGroups(currentPermanentGroups);
-                }
-            }, (error) => console.error("Roster Snapshot Error:", error));
-            
-            // NEW: Listener for Permanent Groups
-            onSnapshot(query(permanentGroupsColRef), (snapshot) => {
-                currentPermanentGroups = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                // Sort by name
-                currentPermanentGroups.sort((a, b) => a.groupName.localeCompare(b.groupName));
-                
-                if (adminView.style.display !== 'none') {
-                    renderPermanentGroups(currentPermanentGroups);
-                }
-            }, (error) => console.error("Permanent Groups Snapshot Error:", error));
-        }
-
-        function filterStudents(searchText) {
-            const lowerCaseSearch = searchText.toLowerCase();
-            
-            if (searchText.length === 0) {
-                searchResults.innerHTML = `<p style="padding: 0.5rem 0.75rem; color: var(--fg-gray);">Start typing to see results...</p>`;
-                return;
-            }
-            
-            // Filter Students
-            const filteredStudents = currentRoster.filter(student => {
-                const fullName = `${student.firstName} ${student.lastName}`;
-                return fullName.toLowerCase().includes(lowerCaseSearch);
-            });
-
-            // NEW: Filter Groups
-            const filteredGroups = currentPermanentGroups.filter(group => {
-                return group.groupName.toLowerCase().includes(lowerCaseSearch);
-            });
-
-            renderSearchResults(filteredStudents, filteredGroups);
-        }
-
-        // NEW: Filter for admin group builder
-        function filterAdminGroupSearch(searchText) {
-            const lowerCaseSearch = searchText.toLowerCase();
-            
-            if (searchText.length === 0) {
-                adminGroupSearchResults.innerHTML = `<p style="padding: 0.5rem 0.75rem; color: var(--fg-gray);">Type above to find students...</p>`;
-                return;
-            }
-            
-            const filtered = currentRoster.filter(student => {
-                const fullName = `${student.firstName} ${student.lastName}`;
-                return fullName.toLowerCase().includes(lowerCaseSearch);
-            });
-            
-            // Render results for group builder
-            if (filtered.length === 0) {
-                adminGroupSearchResults.innerHTML = `<p style="padding: 0.5rem 0.75rem; color: var(--fg-gray);">No students found.</p>`;
-                return;
-            }
-            adminGroupSearchResults.innerHTML = filtered.map(student => {
-                const fullName = `${student.firstName} ${student.lastName}`;
-                const isStaged = stagedForGroupBuilding.find(s => s.id === student.id);
-                return `
-                <div class="search-item">
-                    <div>
-                        <span style="font-weight: 500;">${fullName}</span>
-                        <span style="color: var(--fg-gray); font-size: 0.8rem; margin-left: 4px;">(Gr: ${student.grade})</span>
+                  gridCells.push(
+                    <div key={visualIndex} className={`
+                      relative w-full aspect-square rounded-full flex flex-col items-center justify-center shadow-md transition-all z-10
+                      border-4 ${tileStyle}
+                      ${isEnd ? 'shadow-orange-500/50' : 'shadow-black/10'}
+                    `}>
+                      {!isEnd && !isStart && <div className="absolute inset-1 rounded-full border-2 border-gray-100 pointer-events-none"></div>}
+                      {content}
+                      
+                      <div className="absolute inset-0 flex flex-wrap justify-center items-center gap-0.5 p-1 pointer-events-none z-10">
+                        {occupants.map(p => (
+                          <PlayerToken key={p.id} player={p} isActive={currentPlayerIdx === p.id} />
+                        ))}
+                      </div>
                     </div>
-                    <button class="btn btn-green" data-action="stage-for-builder" data-id="${student.id}" ${isStaged ? 'disabled' : ''} style="padding: 4px 6px; font-size: 0.75rem;">
-                        ${isStaged ? 'Added' : 'Add'}
-                    </button>
+                  );
+               }
+            }
+            return gridCells;
+          };
+
+          const renderBattleModal = () => {
+            if (!battleState) return null;
+            const { attacker, defender, step, p1Choice, p2Choice, winner } = battleState;
+
+            return (
+              <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                <div className="bg-white rounded-3xl p-6 md:p-10 max-w-2xl w-full shadow-2xl border-8 border-red-600 animate-in zoom-in duration-200 flex flex-col items-center text-center">
+                  <div className="flex items-center gap-4 mb-6">
+                    <Swords className="w-16 h-16 text-red-600 animate-pulse" />
+                    <h2 className="text-4xl md:text-5xl font-black uppercase text-red-800 tracking-tighter">BATTLE!</h2>
+                    <Swords className="w-16 h-16 text-red-600 animate-pulse transform scale-x-[-1]" />
+                  </div>
+                  {step === 'INTRO' && (
+                    <>
+                      <div className="text-2xl font-bold mb-8">
+                        <span className={attacker.color.text}>{attacker.name}</span> <span className="text-gray-400 text-sm">vs</span> <span className={defender.color.text}>{defender.name}</span>
+                      </div>
+                      <p className="text-gray-600 mb-8 font-medium">Winner stays. Loser moves back 1 space.</p>
+                      <button onClick={() => setBattleState(prev => ({...prev, step: 'P1'}))} className="bg-red-600 text-white px-8 py-4 rounded-xl font-black text-xl hover:scale-105 transition-transform">Start Battle!</button>
+                    </>
+                  )}
+                  {step === 'P1' && (
+                    <>
+                      <h3 className="text-3xl font-bold mb-2 text-gray-800">{attacker.name}'s Choice</h3>
+                      <p className="bg-yellow-100 text-yellow-800 px-4 py-2 rounded-lg font-bold mb-8 animate-bounce border border-yellow-300">⚠️ {defender.name}, LOOK AWAY NOW!</p>
+                      <div className="flex gap-4">
+                        {['rock', 'paper', 'scissors'].map(c => (
+                          <button key={c} onClick={() => handleBattleChoice(c)} className="w-24 h-24 md:w-32 md:h-32 bg-gray-100 rounded-xl text-5xl md:text-6xl hover:bg-red-100 border-4 border-gray-200 hover:border-red-400 transition-all transform hover:-translate-y-2">{c === 'rock' ? '🪨' : c === 'paper' ? '📄' : '✂️'}</button>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                  {step === 'SWITCH' && (
+                    <>
+                      <div className="text-6xl mb-4">🙈</div>
+                      <h3 className="text-2xl font-bold mb-4">Switch Players!</h3>
+                      <p className="text-gray-600 mb-8">Okay <span className="font-bold">{attacker.name}</span>, your choice is locked.<br/>Please hand the device to <span className="font-bold">{defender.name}</span>.</p>
+                      <button onClick={() => setBattleState(prev => ({...prev, step: 'P2'}))} className="bg-blue-600 text-white px-8 py-4 rounded-xl font-black text-xl hover:scale-105 transition-transform">I am {defender.name}</button>
+                    </>
+                  )}
+                  {step === 'P2' && (
+                    <>
+                      <h3 className="text-3xl font-bold mb-2 text-gray-800">{defender.name}'s Choice</h3>
+                       <p className="bg-yellow-100 text-yellow-800 px-4 py-2 rounded-lg font-bold mb-8 animate-bounce border border-yellow-300">⚠️ {attacker.name}, LOOK AWAY NOW!</p>
+                      <div className="flex gap-4">
+                        {['rock', 'paper', 'scissors'].map(c => (
+                          <button key={c} onClick={() => handleBattleChoice(c)} className="w-24 h-24 md:w-32 md:h-32 bg-gray-100 rounded-xl text-5xl md:text-6xl hover:bg-blue-100 border-4 border-gray-200 hover:border-blue-400 transition-all transform hover:-translate-y-2">{c === 'rock' ? '🪨' : c === 'paper' ? '📄' : '✂️'}</button>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                  {step === 'RESULT' && (
+                    <>
+                      <h3 className="text-3xl font-black mb-8 text-gray-800">RESULT</h3>
+                      <div className="flex justify-center items-center gap-8 mb-8">
+                         <div className="text-center">
+                            <div className="text-sm font-bold text-gray-400 mb-2">{attacker.name}</div>
+                            <div className="text-6xl p-4 bg-gray-50 rounded-xl border-2 border-gray-200">{p1Choice === 'rock' ? '🪨' : p1Choice === 'paper' ? '📄' : '✂️'}</div>
+                         </div>
+                         <div className="text-2xl font-black text-red-300">VS</div>
+                         <div className="text-center">
+                            <div className="text-sm font-bold text-gray-400 mb-2">{defender.name}</div>
+                            <div className="text-6xl p-4 bg-gray-50 rounded-xl border-2 border-gray-200">{p2Choice === 'rock' ? '🪨' : p2Choice === 'paper' ? '📄' : '✂️'}</div>
+                         </div>
+                      </div>
+                      <div className="text-2xl font-bold mb-8">
+                         {winner === 'tie' ? <span className="text-orange-500">IT'S A TIE! GO AGAIN!</span> : <span><span className={winner === attacker.id ? attacker.color.text : defender.color.text}>{winner === attacker.id ? attacker.name : defender.name}</span> WINS!</span>}
+                      </div>
+                      <button onClick={finalizeBattle} className="bg-gray-900 text-white px-8 py-4 rounded-xl font-black text-xl hover:bg-black transition-colors w-full">{winner === 'tie' ? 'Rematch' : 'Continue'}</button>
+                    </>
+                  )}
                 </div>
-                `;
-            }).join('');
+              </div>
+            );
+          };
+
+          return (
+            <div className="min-h-screen bg-orange-50 font-sans text-gray-900 select-none pb-20">
+              {phase === GAME_PHASES.GAME_OVER && <Confetti />}
+              
+              {/* INTRO VIDEO */}
+              {showIntroVideo && (
+                <div className="fixed inset-0 bg-black/90 z-[100] flex flex-col items-center justify-center p-4">
+                  <div className="w-full max-w-3xl aspect-video bg-black shadow-2xl rounded-xl overflow-hidden border-4 border-amber-500 relative">
+                     <iframe width="100%" height="100%" src="https://www.youtube.com/embed/NtMmpMSfA5I?autoplay=1" title="Prebeg Spanks-Giving Intro" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe>
+                  </div>
+                  <button onClick={() => setShowIntroVideo(false)} className="mt-8 bg-gradient-to-r from-red-600 to-orange-600 text-white font-black text-2xl py-4 px-12 rounded-full shadow-lg hover:scale-105 transition-transform flex items-center gap-2">🍗 LET'S FEAST! (Skip Video)</button>
+                </div>
+              )}
+
+              {/* HEADER */}
+              <header className="bg-amber-900 text-orange-50 p-4 shadow-lg sticky top-0 z-50 border-b-4 border-amber-700">
+                <div className="max-w-5xl mx-auto flex justify-between items-center">
+                  <h1 className="text-xl md:text-3xl font-black tracking-wide uppercase flex items-center gap-2">
+                    <Drumstick className="w-6 h-6 md:w-8 md:h-8 text-orange-400" /> <span className="hidden md:inline">Prebeg Spanks-Giving</span><span className="md:hidden">Spanks-Giving</span>
+                  </h1>
+                  {!['SETUP_COUNT', 'SETUP_NAMES'].includes(phase) && (
+                    <div className="flex items-center gap-2 text-sm bg-amber-950/50 px-4 py-2 rounded-full border border-amber-800">
+                       <span className="hidden md:inline text-amber-200 uppercase text-xs font-bold mr-1">Turn</span>
+                       <span className={`flex items-center gap-1 font-bold ${players[currentPlayerIdx].color.text} bg-white px-3 py-1 rounded-full shadow-sm`}>{players[currentPlayerIdx].icon} {players[currentPlayerIdx].name}</span>
+                    </div>
+                  )}
+                </div>
+              </header>
+
+              {/* MAIN CONTENT */}
+              <main className="max-w-6xl mx-auto p-4 flex flex-col gap-6">
+                
+                {/* SETUP: COUNT */}
+                {phase === GAME_PHASES.SETUP_COUNT && (
+                  <div className="bg-white p-8 md:p-12 rounded-3xl shadow-2xl text-center max-w-2xl mx-auto mt-6 border-8 border-amber-200 animate-in zoom-in-95 duration-500">
+                    <div className="flex justify-center mb-6">
+                       <div className="relative">
+                         <Drumstick className="w-24 h-24 md:w-32 md:h-32 text-orange-500 animate-bounce drop-shadow-lg" />
+                         <div className="absolute -bottom-2 w-full h-4 bg-black/10 rounded-full blur-md animate-pulse"></div>
+                       </div>
+                    </div>
+                    <h1 className="text-4xl md:text-6xl font-black mb-2 text-amber-900 tracking-tighter leading-tight uppercase">Prebeg<br/><span className="text-orange-600">Spanks-Giving</span></h1>
+                    <p className="text-lg md:text-xl text-gray-600 font-bold mb-1 italic">"A game of mishaps, sabotage, deceit and glory"</p>
+                    <p className="text-sm md:text-md text-amber-700 font-bold mb-10 tracking-widest uppercase">Can you secure your Family Legacy!</p>
+                    <h2 className="text-xl font-black text-gray-400 mb-4 uppercase tracking-widest">How many are eating?</h2>
+                    <div className="flex justify-center gap-4 md:gap-8 mb-8">
+                      {[2, 3, 4].map(num => (
+                        <button key={num} onClick={() => initNameSetup(num)} className="group relative w-20 h-20 md:w-24 md:h-24 rounded-2xl bg-gradient-to-br from-amber-400 to-amber-600 text-white font-black text-4xl shadow-xl transform transition hover:scale-110 hover:-translate-y-2 hover:shadow-orange-500/40 border-b-8 border-amber-800 active:border-b-0 active:translate-y-2">
+                          <span className="drop-shadow-md">{num}</span>
+                          <span className="absolute -bottom-8 left-0 w-full text-center text-xs font-bold text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity uppercase">Players</span>
+                        </button>
+                      ))}
+                    </div>
+                    <button onClick={() => setShowRules(true)} className="flex items-center justify-center gap-2 mx-auto text-gray-400 hover:text-orange-500 font-bold transition-colors mt-8"><BookOpen className="w-5 h-5" /> How to Play</button>
+                  </div>
+                )}
+
+                {/* RULES MODAL */}
+                {showRules && (
+                  <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <div className="bg-white rounded-3xl p-8 max-w-lg w-full shadow-2xl border-4 border-amber-200 relative animate-in zoom-in duration-200 max-h-[90vh] overflow-y-auto">
+                      <button onClick={() => setShowRules(false)} className="absolute top-4 right-4 p-2 bg-gray-100 rounded-full hover:bg-gray-200"><X className="w-6 h-6 text-gray-500" /></button>
+                      <h2 className="text-3xl font-black text-amber-800 mb-6 flex items-center gap-2"><Info className="w-8 h-8" /> Game Rules</h2>
+                      <div className="space-y-4 text-gray-700">
+                        <div className="bg-amber-50 p-4 rounded-xl border border-amber-100"><h3 className="font-bold text-amber-900 mb-1 flex items-center gap-2"><ArrowRight className="w-4 h-4" /> Goal</h3><p className="text-sm">Roll the d4 die to move. First player to reach the <strong>Feast (End)</strong> wins!</p></div>
+                        <div><h3 className="font-bold text-gray-900 mb-2">⚔️ Battles</h3><p className="text-sm mb-2">If you land on another player, a <strong>Rock-Paper-Scissors Battle</strong> begins! Winner stays, loser moves back 1 space.</p></div>
+                        <div><h3 className="font-bold text-gray-900 mb-2">👀 Cheating</h3><p className="text-sm mb-2">You can try to cheat instead of rolling. <strong>20% chance</strong> to move forward 5 spaces. <strong>80% chance</strong> to get caught by Grandma and move back 5!</p></div>
+                        <div>
+                          <h3 className="font-bold text-gray-900 mb-2">🎭 Roles</h3>
+                          <ul className="text-sm space-y-1">
+                            <li className="flex items-center gap-2"><Glasses className="w-3 h-3" /> <strong>Cousin:</strong> Starts with free shield.</li>
+                            <li className="flex items-center gap-2"><Pizza className="w-3 h-3" /> <strong>Glutton:</strong> Immune to skip turn.</li>
+                            <li className="flex items-center gap-2"><Megaphone className="w-3 h-3" /> <strong>Tattletale:</strong> Moves forward if others cheat.</li>
+                            <li className="flex items-center gap-2"><Crown className="w-3 h-3" /> <strong>Favorite:</strong> Starts with shield.</li>
+                          </ul>
+                        </div>
+                      </div>
+                      <button onClick={() => setShowRules(false)} className="w-full mt-8 bg-amber-500 text-white font-bold py-3 rounded-xl hover:bg-amber-600 transition-colors">Got it!</button>
+                    </div>
+                  </div>
+                )}
+
+                {/* SETUP: NAMES */}
+                {phase === GAME_PHASES.SETUP_NAMES && (
+                  <div className="bg-white p-8 rounded-3xl shadow-xl max-w-2xl mx-auto mt-6 border-4 border-amber-200 animate-in slide-in-from-right-10 duration-300">
+                    <h2 className="text-3xl font-black mb-8 text-amber-800 text-center flex items-center justify-center gap-3"><Edit2 className="w-8 h-8" /> Customize Family</h2>
+                    <div className="space-y-6 mb-8">
+                      {Array.from({ length: playerCount }).map((_, i) => (
+                        <div key={i} className="flex flex-col md:flex-row gap-4 items-center bg-gray-50 p-4 rounded-xl border border-gray-100">
+                          <div className={`w-14 h-14 rounded-full flex items-center justify-center text-2xl shadow-lg transform rotate-3 ${COLORS[i].bg} text-white shrink-0 border-4 border-white ring-2 ${COLORS[i].ring}`}>{COLORS[i].icon}</div>
+                          <div className="flex-1 w-full space-y-1">
+                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-wider ml-1">Player Name</label>
+                            <input type="text" maxLength={12} value={playerNames[i]} onChange={(e) => handleNameChange(i, e.target.value)} placeholder={`Player ${i + 1}`} className="w-full border-2 border-gray-200 rounded-xl px-4 py-2 focus:border-amber-500 focus:outline-none focus:ring-4 focus:ring-amber-100 font-bold text-gray-700 bg-white" />
+                          </div>
+                          <div className="flex-1 w-full space-y-1">
+                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-wider ml-1">Role Ability</label>
+                            <div className="relative">
+                              <select value={playerRoles[i]} onChange={(e) => handleRoleChange(i, e.target.value)} className="w-full border-2 border-gray-200 rounded-xl px-4 py-2 focus:border-amber-500 focus:outline-none font-bold text-gray-700 appearance-none bg-white cursor-pointer">
+                                {Object.values(ROLES).map(role => (<option key={role.id} value={role.id}>{role.name}</option>))}
+                              </select>
+                              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500"><ArrowRight className="w-4 h-4 rotate-90" /></div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="flex gap-3">
+                      <button onClick={() => setPhase(GAME_PHASES.SETUP_COUNT)} className="px-6 py-4 rounded-xl font-bold text-gray-500 hover:bg-gray-100 transition-colors">Back</button>
+                      <button onClick={finalizeSetup} className="flex-1 bg-gradient-to-r from-green-500 to-green-600 text-white font-black py-4 rounded-xl shadow-lg hover:from-green-600 hover:to-green-700 transform transition active:scale-[0.98] flex items-center justify-center gap-3 text-xl">Start the Feast! <ArrowRight className="w-6 h-6" /></button>
+                    </div>
+                  </div>
+                )}
+
+                {/* MAIN GAME INTERFACE */}
+                {!['SETUP_COUNT', 'SETUP_NAMES'].includes(phase) && (
+                  <>
+                    <div className="bg-amber-100 p-4 md:p-8 rounded-3xl shadow-2xl border-4 border-amber-800/20 relative overflow-hidden">
+                       <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: `repeating-linear-gradient(45deg, #b45309 25%, transparent 25%, transparent 75%, #b45309 75%, #b45309), repeating-linear-gradient(45deg, #b45309 25%, #fcd34d 25%, #fcd34d 75%, #b45309 75%, #b45309)`, backgroundPosition: '0 0, 10px 10px', backgroundSize: '20px 20px' }}></div>
+                       <svg className="absolute inset-0 w-full h-full pointer-events-none z-0" viewBox="0 0 100 100" preserveAspectRatio="none"><path d={getPathD()} fill="none" stroke="#b45309" strokeWidth="1.5" strokeDasharray="2 2" strokeOpacity="0.6" /></svg>
+                       <div className="relative z-10 grid grid-cols-5 gap-2 md:gap-4 max-w-2xl mx-auto">{renderBoard()}</div>
+                    </div>
+
+                    {renderBattleModal()}
+
+                    {phase === GAME_PHASES.EVENT_TRIGGER && activeEvent && (
+                       <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                          <div className={`bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl animate-in zoom-in duration-300 border-8 text-center ${activeEvent.type === 'saint' ? 'border-yellow-400' : 'border-purple-600'}`}>
+                            <div className="mb-4 flex justify-center">
+                              {activeEvent.type === 'saint' ? (<div className="w-24 h-24 bg-yellow-100 rounded-full flex items-center justify-center animate-bounce"><Star className="w-12 h-12 text-yellow-600" /></div>) : (<div className="w-24 h-24 bg-purple-100 rounded-full flex items-center justify-center animate-pulse"><Ghost className="w-12 h-12 text-purple-600" /></div>)}
+                            </div>
+                            <h2 className={`text-2xl font-black uppercase mb-2 ${activeEvent.type === 'saint' ? 'text-yellow-600' : 'text-purple-600'}`}>{activeEvent.title}</h2>
+                            <p className="text-gray-600 font-bold mb-6">{activeEvent.desc}</p>
+                            <button onClick={resolveEvent} className="w-full py-4 rounded-xl font-black text-white text-xl shadow-lg transform transition active:scale-95 bg-gray-900 hover:bg-black">Continue</button>
+                          </div>
+                       </div>
+                    )}
+
+                    {targetMode && (
+                       <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                         <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl animate-in zoom-in duration-200 border-4 border-amber-400">
+                           <h3 className="text-xl font-black text-center mb-6 text-gray-800">Play <span className="text-amber-600 underline decoration-wavy">"{selectedCard.title}"</span> on whom?</h3>
+                           <div className="grid grid-cols-2 gap-4">
+                             {players.map(p => (
+                               <button key={p.id} onClick={() => executeCardEffect(p.id)} className={`p-4 rounded-xl border-2 transition-all ${p.color.border} ${p.color.bg} bg-opacity-10 hover:bg-opacity-30 hover:scale-105 flex flex-col items-center justify-center gap-2 font-bold text-gray-800`}>
+                                 <span className="text-4xl filter drop-shadow-md">{p.icon}</span> <span>{p.name}</span>
+                               </button>
+                             ))}
+                           </div>
+                           <button onClick={() => { setTargetMode(false); setSelectedCard(null); }} className="mt-6 w-full py-3 text-gray-500 hover:text-gray-800 hover:bg-gray-100 rounded-lg font-bold transition-colors">Cancel</button>
+                         </div>
+                       </div>
+                    )}
+
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                      <div className="lg:col-span-5 flex flex-col gap-4">
+                        <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100 relative overflow-hidden">
+                          <div className={`absolute top-0 left-0 w-3 h-full ${players[currentPlayerIdx].color.bg}`}></div>
+                          <div className="flex justify-between items-start mb-6 pl-2">
+                            <div>
+                              <h3 className="font-bold text-gray-400 text-xs uppercase tracking-wider mb-1">Active Player</h3>
+                              <div className="text-3xl md:text-4xl font-black text-gray-800 flex items-center gap-3"><span className="text-4xl md:text-5xl">{players[currentPlayerIdx].icon}</span> {players[currentPlayerIdx].name}</div>
+                              <div className="flex items-center gap-2 mt-1 text-xs font-bold text-gray-500 bg-gray-100 px-2 py-1 rounded w-fit">{players[currentPlayerIdx].role.icon} {players[currentPlayerIdx].role.name}</div>
+                            </div>
+                            <div className="flex flex-col gap-2 items-end">
+                              {players[currentPlayerIdx].shield && (<div className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 border border-blue-200 shadow-sm animate-pulse"><Shield className="w-3 h-3" /> SHIELDED</div>)}
+                            </div>
+                          </div>
+
+                          <div className="min-h-[160px] flex flex-col justify-center">
+                            {phase === GAME_PHASES.START_TURN && (
+                              <div className="text-center w-full">
+                                <p className="mb-6 text-gray-500 font-medium">Play a card to mess with family,<br/>or just roll to escape them.</p>
+                                <div className="flex gap-2">
+                                  <button onClick={rollDice} className="flex-1 bg-gradient-to-r from-orange-500 to-red-500 text-white font-black py-5 rounded-xl shadow-lg shadow-orange-500/30 hover:shadow-orange-500/50 hover:from-orange-600 hover:to-red-600 transition-all text-2xl flex items-center justify-center gap-3 active:scale-95 group">🎲 ROLL D4</button>
+                                  <button onClick={handleCheat} className="w-24 bg-gray-100 hover:bg-gray-200 text-gray-400 hover:text-red-500 rounded-xl font-bold text-xs flex flex-col items-center justify-center gap-1 transition-all border-2 border-dashed border-gray-300 hover:border-red-400 group" title="20% chance to advance 5 spaces. 80% chance to go BACK 5 spaces!"><Eye className="w-5 h-5 group-hover:scale-110" /><span className="leading-tight">Cheat<br/>(Risk It)</span></button>
+                                </div>
+                              </div>
+                            )}
+                            {(phase === GAME_PHASES.ROLLING || phase === GAME_PHASES.MOVING) && (
+                               <div className="flex flex-col items-center justify-center w-full">
+                                  <div className="relative"><div className="text-9xl font-black text-amber-600 animate-bounce drop-shadow-md">{diceVal !== null ? diceVal : '?'}</div></div>
+                                  <div className="text-sm font-bold text-amber-800/50 mt-2 tracking-widest uppercase">Moving Steps</div>
+                               </div>
+                            )}
+                            {phase === GAME_PHASES.DRAW_CHOICE && (
+                              <div className="text-center w-full animate-in fade-in slide-in-from-bottom-4">
+                                <h4 className="font-bold mb-4 text-gray-700">Move complete! Draw a card:</h4>
+                                <div className="grid grid-cols-2 gap-4">
+                                  <button onClick={() => drawCard('offense')} className="group h-36 bg-red-50 border-2 border-red-200 rounded-xl p-2 hover:bg-red-100 hover:border-red-400 transition-all flex flex-col items-center justify-center gap-2 relative overflow-hidden">
+                                    <div className="absolute inset-0 bg-red-500 opacity-0 group-hover:opacity-5 transition-opacity"></div>
+                                    <Skull className="w-10 h-10 text-red-600 group-hover:scale-110 transition-transform" />
+                                    <div><span className="block font-black text-red-800 text-lg">OFFENSE</span><span className="block text-xs text-red-600 font-medium">Attack!</span></div>
+                                  </button>
+                                  <button onClick={() => drawCard('defense')} className="group h-36 bg-blue-50 border-2 border-blue-200 rounded-xl p-2 hover:bg-blue-100 hover:border-blue-400 transition-all flex flex-col items-center justify-center gap-2 relative overflow-hidden">
+                                    <div className="absolute inset-0 bg-blue-500 opacity-0 group-hover:opacity-5 transition-opacity"></div>
+                                    <Shield className="w-10 h-10 text-blue-600 group-hover:scale-110 transition-transform" />
+                                    <div><span className="block font-black text-blue-800 text-lg">DEFENSE</span><span className="block text-xs text-blue-600 font-medium">Buff Self!</span></div>
+                                  </button>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        <div className="bg-gray-900 text-green-400 font-mono text-sm p-4 rounded-2xl shadow-lg h-48 overflow-y-auto border-4 border-gray-800 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900">
+                          {logs.map((log, i) => (
+                            <div key={i} className="mb-2 border-b border-gray-800 pb-2 last:border-0 last:pb-0 flex gap-2">
+                              <span className="opacity-40 select-none text-xs mt-0.5">{i+1}.</span> 
+                              <span>{log}</span>
+                            </div>
+                          ))}
+                          <div ref={logEndRef} />
+                        </div>
+                      </div>
+                      <div className="lg:col-span-7 bg-slate-100 p-6 rounded-3xl shadow-inner border border-slate-200 flex flex-col">
+                        <div className="flex justify-between items-center mb-4">
+                          <h3 className="font-bold text-gray-500 text-sm uppercase tracking-wide flex items-center gap-2"><Utensils className="w-4 h-4" /> {players[currentPlayerIdx].name}'s Hand</h3>
+                          <span className="bg-slate-200 text-slate-600 px-2 py-1 rounded text-xs font-bold">{players[currentPlayerIdx].cards.length} Cards</span>
+                        </div>
+                        <div className="flex-1 overflow-x-auto pb-4 custom-scrollbar">
+                          {players[currentPlayerIdx].cards.length === 0 ? (
+                             <div className="h-full min-h-[200px] flex flex-col items-center justify-center text-gray-400 border-2 border-dashed border-gray-300 rounded-xl bg-slate-50/50"><Dna className="w-10 h-10 mb-2 opacity-20" /><span className="font-medium italic">Empty Hand</span><span className="text-xs opacity-60">Draw cards at the end of your turn!</span></div>
+                          ) : (
+                            <div className="flex gap-4 px-2 min-h-[220px] items-center">
+                              {players[currentPlayerIdx].cards.map((card, idx) => (<Card key={idx} card={card} isSelected={selectedCard?.index === idx} onClick={() => { if (phase === GAME_PHASES.START_TURN) playCard(idx); }} />))}
+                            </div>
+                          )}
+                        </div>
+                        {phase !== GAME_PHASES.START_TURN && players[currentPlayerIdx].cards.length > 0 && (<div className="text-xs text-amber-600 mt-2 font-bold text-center bg-amber-50 py-2 rounded border border-amber-100"><AlertTriangle className="w-3 h-3 inline mr-1" />Cards can only be played at the start of your turn.</div>)}
+                      </div>
+                    </div>
+                  </>
+                )}
+              </main>
+            </div>
+          );
         }
 
-        // --- Event Listeners ---
-        document.addEventListener('DOMContentLoaded', () => {
-
-            setupFirebase();
-            
-            // --- NEW: Tab Toggling Listeners ---
-            queuesTabBtn.addEventListener('click', () => {
-                queuesView.style.display = 'block';
-                adminView.style.display = 'none';
-                queuesTabBtn.classList.add('active');
-                adminTabBtn.classList.remove('active');
-            });
-            
-            adminTabBtn.addEventListener('click', () => {
-                queuesView.style.display = 'none';
-                adminView.style.display = 'block';
-                queuesTabBtn.classList.remove('active');
-                adminTabBtn.classList.add('active');
-                // Render roster when tab is clicked
-                renderAdminRoster(currentRoster); 
-                // FIX: Also render permanent groups when tab is clicked
-                renderPermanentGroups(currentPermanentGroups);
-            });
-
-            // --- Add Student Section Listeners ---
-            searchInput.addEventListener('input', (e) => {
-                filterStudents(e.target.value);
-            });
-
-            searchResults.addEventListener('click', (e) => {
-                const target = e.target;
-                const { queue, name, grade, action, groupId } = target.dataset;
-
-                if (action === 'stage-group') { // Renamed from btn-purple
-                    stagedSiblingGroup.push({ name, grade });
-                    renderStagedGroup();
-                } else if (action === 'add-permanent-group') { // NEW
-                    addPermanentGroupToQueue(groupId);
-                    searchInput.value = '';
-                    filterStudents('');
-                } else if (name && grade && queue) {
-                    addStudentToQueue(queue, name, grade);
-                    searchInput.value = '';
-                    filterStudents('');
-                }
-            });
-
-            stagedList.addEventListener('click', (e) => {
-                const removeBtn = e.target.closest('.remove-staged-btn');
-                if (removeBtn) {
-                    const indexToRemove = parseInt(removeBtn.dataset.index, 10);
-                    stagedSiblingGroup.splice(indexToRemove, 1);
-                    renderStagedGroup();
-                }
-            });
-            
-            addStagedGroupBtn.addEventListener('click', () => {
-                addGroupToQueue(stagedSiblingGroup);
-            });
-
-            manualAddBtn.addEventListener('click', () => {
-                const name = manualNameInput.value.trim();
-                if (name) { addStudentToQueue(1, name, 'N/A'); manualNameInput.value = ''; }
-            });
-            manualAddBtnSib.addEventListener('click', () => {
-                const name = manualNameInput.value.trim();
-                if (name) { addStudentToQueue(2, name, 'N/A'); manualNameInput.value = ''; }
-            });
-            manualAddBtnWalk.addEventListener('click', () => {
-                const name = manualNameInput.value.trim();
-                if (name) { addStudentToQueue(3, name, 'N/A'); manualNameInput.value = ''; }
-            });
-            
-            // --- NEW: Admin Panel Listeners ---
-            clearPickedUpBtn.addEventListener('click', () => {
-                openPasswordModal(
-                    { action: 'clearPickedUp' },
-                    "To reset the 'Picked Up' list, enter admin password.",
-                    'btn-orange'
-                );
-            });
-
-            clearAllBtn.addEventListener('click', () => {
-                openPasswordModal(
-                    { action: 'clearAllQueues' },
-                    "To clear all 3 LIVE queues, enter admin password.",
-                    'btn-red'
-                );
-            });
-
-            adminAddStudentBtn.addEventListener('click', () => {
-                const fName = adminFirstName.value.trim();
-                const lName = adminLastName.value.trim();
-                const grade = adminGrade.value.trim().toUpperCase();
-                
-                if (fName && lName && grade) {
-                    addRosterStudent(fName, lName, grade);
-                } else {
-                    console.warn("All fields required.");
-                    if (!fName) adminFirstName.style.borderColor = 'var(--red)';
-                    if (!lName) adminLastName.style.borderColor = 'var(--red)';
-                    if (!grade) adminGrade.style.borderColor = 'var(--red)';
-                }
-            });
-            // Clear error rings on input
-            adminFirstName.addEventListener('input', () => adminFirstName.style.borderColor = 'var(--border-color)');
-            adminLastName.addEventListener('input', () => adminLastName.style.borderColor = 'var(--border-color)');
-            adminGrade.addEventListener('input', () => adminGrade.style.borderColor = 'var(--border-color)');
-
-            
-            adminRosterList.addEventListener('click', (e) => {
-                const btn = e.target.closest('.action-btn');
-                if (!btn) return;
-
-                const { action, id } = btn.dataset;
-                
-                if (action === 'delete-roster-student') {
-                    openConfirmationModal(
-                        'Delete Roster Student?',
-                        'Permanently delete this student from the roster? This cannot be undone.',
-                        { action: 'deleteRosterStudent', docId: id }
-                    );
-                } else if (action === 'edit-roster-student') {
-                    openEditStudentModal(id);
-                }
-            });
-
-            // NEW: Listeners for Admin Group Builder
-            adminGroupSearchInput.addEventListener('input', (e) => {
-                filterAdminGroupSearch(e.target.value);
-            });
-
-            adminGroupSearchResults.addEventListener('click', (e) => {
-                const addBtn = e.target.closest('[data-action="stage-for-builder"]');
-                if (addBtn && !addBtn.disabled) {
-                    const student = currentRoster.find(s => s.id === addBtn.dataset.id);
-                    if (student) {
-                        stagedForGroupBuilding.push(student);
-                        renderGroupBuilderList();
-                        addBtn.disabled = true; // Disable button after adding
-                        addBtn.textContent = 'Added';
-                    }
-                }
-            });
-
-            adminGroupBuilderList.addEventListener('click', (e) => {
-                const removeBtn = e.target.closest('.remove-staged-builder-btn');
-                if (removeBtn) {
-                    const indexToRemove = parseInt(removeBtn.dataset.index, 10);
-                    stagedForGroupBuilding.splice(indexToRemove, 1);
-                    renderGroupBuilderList();
-                    // We need to re-render the search results to re-enable any 'Add' buttons
-                    filterAdminGroupSearch(adminGroupSearchInput.value);
-                }
-            });
-            
-            adminSaveGroupBtn.addEventListener('click', () => {
-                const groupName = adminGroupNameInput.value.trim();
-                const studentIds = stagedForGroupBuilding.map(s => s.id);
-                savePermanentGroup(groupName, studentIds);
-            });
-
-            adminPermanentGroupList.addEventListener('click', (e) => {
-                const deleteBtn = e.target.closest('[data-action="delete-permanent-group"]');
-                if (deleteBtn) {
-                    openConfirmationModal(
-                        'Delete Permanent Group?',
-                        'This will delete the group. It will not delete the students from the roster.',
-                        { action: 'deletePermanentGroup', docId: deleteBtn.dataset.id }
-                    );
-                }
-            });
-
-
-            // --- Delegated clicks for all TABLE actions ---
-            document.body.addEventListener('click', async (e) => {
-                const target = e.target.closest('.action-btn');
-                if (!target) return;
-                
-                // Check if the click is inside the admin panel; if so, ignore it
-                // (it's handled by the adminRosterList listener)
-                if (target.closest('#admin-roster-list')) return;
-
-                const { action, id, name, queue } = target.dataset;
-                const studentIndex = target.dataset.index ? parseInt(target.dataset.index, 10) : null;
-                
-                if (action === 'dismiss-queue') {
-                    openConfirmationModal(
-                        'Dismiss Student/Group?',
-                        `Are you sure you want to dismiss this entry? (ID: ${id})`,
-                        { action: 'dismissQueue', docId: id, queue: queue }
-                    );
-                
-                } else if (action === 'remove-pickedup') {
-                    openConfirmationModal(
-                        'Remove from Picked Up?',
-                        `Are you sure you want to remove ${name} (ID: ${id})?`,
-                        { action: 'removePickedUp', docId: id }
-                    );
-                
-                } else if (action === 'dismiss-group-student') {
-                    openConfirmationModal(
-                        'Dismiss Student?',
-                        `Are you sure you want to dismiss this student from the group?`,
-                        { action: 'dismissGroupStudent', docId: id, queue: queue, studentIndex: studentIndex }
-                    );
-
-                } else if (action === 'highlight') {
-                    toggleHighlight(queue, id);
-                
-                } else if (action === 'highlight-group-student') {
-                    toggleGroupStudentHighlight(queue, id, studentIndex);
-                
-                } else if (action === 'add-note') {
-                    const docRef = doc(db, `/artifacts/${appId}/public/data/${queue}/${id}`);
-                    const studentDoc = await getDoc(docRef);
-                    const currentNote = studentDoc.data().note || "";
-                    updateStudentNote(queue, id, null, currentNote);
-
-                } else if (action === 'add-note-group') {
-                    const docRef = doc(db, `/artifacts/${appId}/public/data/${queue}/${id}`);
-                    const studentDoc = await getDoc(docRef);
-                    const currentNote = studentDoc.data().students[studentIndex].note || "";
-                    updateStudentNote(queue, id, studentIndex, currentNote);
-                }
-            });
-            
-            // --- Modal Listeners ---
-            modalCancelBtn.addEventListener('click', closePasswordModal);
-            modalConfirmBtn.addEventListener('click', handlePasswordConfirm);
-            confirmationModalCancelBtn.addEventListener('click', closeConfirmationModal);
-            confirmationModalConfirmBtn.addEventListener('click', handleConfirmationConfirm);
-            
-            // NEW: Edit Student Modal Listeners
-            modalEditCancelBtn.addEventListener('click', closeEditStudentModal);
-            modalEditSaveBtn.addEventListener('click', handleEditStudentSave);
-            
-        });
+        ReactDOM.createRoot(document.getElementById('root')).render(<PrebegSpanksGiving />);
     </script>
-
 </body>
 </html>
