@@ -737,58 +737,156 @@
 
           const triggerRandomEvent = (player) => {
             playSound('alert');
-            const roll = Math.random();
-            let eventData = {};
             
-            if (roll < 0.25) {
-                // Saint Mike (Good)
-                eventData = {
-                  type: 'saint', title: 'The Saint, Uncle Mike', desc: 'Uncle Mike showed up with extra stuffing!',
-                  effect: () => {
+            // EXPANDED EVENT POOL (16 Situations)
+            const EVENTS_POOL = [
+                // --- GOOD EVENTS (SAINT) ---
+                {
+                    type: 'saint', title: 'The Saint, Uncle Mike', desc: 'Uncle Mike showed up with extra stuffing!',
+                    execute: (newPlayers) => {
+                        const idx = newPlayers.findIndex(p => p.id === player.id);
+                        newPlayers[idx].pos = Math.min(BOARD_SIZE, newPlayers[idx].pos + 3);
+                        return `😇 Uncle Mike moved ${player.name} forward 3 spaces!`;
+                    }
+                },
+                {
+                    type: 'saint', title: 'Chance Found a Dollar', desc: 'Little Chance found money. It\'s a good omen.',
+                    execute: (newPlayers) => {
+                        const idx = newPlayers.findIndex(p => p.id === player.id);
+                        newPlayers[idx].pos = Math.min(BOARD_SIZE, newPlayers[idx].pos + 2);
+                        return `🍀 Chance's good luck moved ${player.name} forward 2 spaces!`;
+                    }
+                },
+                {
+                    type: 'saint', title: 'Aunt Rosie\'s Secret', desc: 'She slipped you the best piece of turkey.',
+                    execute: (newPlayers) => {
+                        const idx = newPlayers.findIndex(p => p.id === player.id);
+                        newPlayers[idx].pos = Math.min(BOARD_SIZE, newPlayers[idx].pos + 4);
+                        return `🍗 Delicious! ${player.name} energized +4 spaces!`;
+                    }
+                },
+                {
+                    type: 'saint', title: 'Detroit Lions Score!', desc: 'Everyone is cheering! Distracted movement!',
+                    execute: (newPlayers) => {
+                        const idx = newPlayers.findIndex(p => p.id === player.id);
+                        newPlayers[idx].pos = Math.min(BOARD_SIZE, newPlayers[idx].pos + 5);
+                        return `🏈 TOUCHDOWN! ${player.name} sneaks forward 5 spaces!`;
+                    }
+                },
+                {
+                    type: 'saint', title: 'Grandma\'s Favor', desc: 'She said you\'re looking thin. Have a cookie.',
+                    execute: (newPlayers) => {
+                        const idx = newPlayers.findIndex(p => p.id === player.id);
+                        newPlayers[idx].pos = Math.min(BOARD_SIZE, newPlayers[idx].pos + 3);
+                        return `🍪 Sugar rush! ${player.name} moves forward 3 spaces.`;
+                    }
+                },
+                {
+                    type: 'saint', title: 'Dodged the Question', desc: 'You successfully avoided talking about your career.',
+                    execute: (newPlayers) => {
+                        const idx = newPlayers.findIndex(p => p.id === player.id);
+                        newPlayers[idx].pos = Math.min(BOARD_SIZE, newPlayers[idx].pos + 4);
+                        return `😎 Smooth move. ${player.name} advances 4 spaces.`;
+                    }
+                },
+                {
+                    type: 'saint', title: 'Dog Likes You', desc: 'The dog is defending you from Aunt Anna.',
+                    execute: (newPlayers) => {
+                        const idx = newPlayers.findIndex(p => p.id === player.id);
+                        newPlayers[idx].shield = true; 
+                        return `🐶 Good boy! ${player.name} gains a Shield!`;
+                    }
+                },
+                 {
+                    type: 'saint', title: 'Nap Time Success', desc: 'You got the good spot on the couch.',
+                    execute: (newPlayers) => {
+                        const idx = newPlayers.findIndex(p => p.id === player.id);
+                        newPlayers[idx].pos = Math.min(BOARD_SIZE, newPlayers[idx].pos + 2);
+                        return `🛋️ Well rested. ${player.name} moves +2.`;
+                    }
+                },
+
+                // --- BAD EVENTS (BAD) ---
+                {
+                    type: 'bad', title: 'Bad Marty', desc: 'Bad Marty touched the TV remote!',
+                    execute: (newPlayers) => {
+                        const idx = newPlayers.findIndex(p => p.id === player.id);
+                        newPlayers[idx].pos = Math.max(0, newPlayers[idx].pos - 3);
+                        return `😈 Bad Marty pushed ${player.name} back 3 spaces!`;
+                    }
+                },
+                {
+                    type: 'bad', title: 'Zack & Guy Fight!', desc: 'Elder Zack and Uncle Guy are fighting on the lawn!',
+                    execute: (newPlayers) => {
+                        const idx = newPlayers.findIndex(p => p.id === player.id);
+                        newPlayers[idx].pos = Math.max(0, newPlayers[idx].pos - 2);
+                        return `🥊 Fight! ${player.name} moved back 2 spaces to watch.`;
+                    }
+                },
+                {
+                    type: 'bad', title: 'Dish Duty', desc: 'Someone has to wash the gravy boat.',
+                    execute: (newPlayers) => {
+                        const idx = newPlayers.findIndex(p => p.id === player.id);
+                        newPlayers[idx].pos = Math.max(0, newPlayers[idx].pos - 4);
+                        return `🧼 Scrubbing bubbles. ${player.name} back 4 spaces.`;
+                    }
+                },
+                {
+                    type: 'bad', title: 'Politics Talk', desc: 'Uncle Jeff brought up the election map.',
+                    execute: (newPlayers) => {
+                        const idx = newPlayers.findIndex(p => p.id === player.id);
+                        newPlayers[idx].pos = Math.max(0, newPlayers[idx].pos - 5);
+                        return `📢 Argument! ${player.name} retreats 5 spaces to hide.`;
+                    }
+                },
+                {
+                    type: 'bad', title: 'Spilled Wine', desc: 'It\'s on the white carpet!',
+                    execute: (newPlayers) => {
+                        const idx = newPlayers.findIndex(p => p.id === player.id);
+                        newPlayers[idx].pos = Math.max(0, newPlayers[idx].pos - 3);
+                        return `🍷 Oops! ${player.name} runs back 3 spaces for club soda.`;
+                    }
+                },
+                {
+                    type: 'bad', title: 'Full Name Called', desc: 'Grandma used your middle name.',
+                    execute: (newPlayers) => {
+                        const idx = newPlayers.findIndex(p => p.id === player.id);
+                        newPlayers[idx].pos = Math.max(0, newPlayers[idx].pos - 6);
+                        return `😱 TERROR! ${player.name} freezes and goes back 6 spaces.`;
+                    }
+                },
+                {
+                    type: 'bad', title: 'Kids Table Exile', desc: 'Not enough chairs.',
+                    execute: (newPlayers) => {
+                        const idx = newPlayers.findIndex(p => p.id === player.id);
+                        newPlayers[idx].pos = Math.max(0, newPlayers[idx].pos - 4);
+                        return `🪑 Sent to the plastic chairs. ${player.name} back 4.`;
+                    }
+                },
+                {
+                    type: 'bad', title: 'Food Coma', desc: 'Too much Tryptophan.',
+                    execute: (newPlayers) => {
+                        const idx = newPlayers.findIndex(p => p.id === player.id);
+                        newPlayers[idx].skipTurn = true;
+                        return `💤 ${player.name} fell asleep! Skip next turn.`;
+                    }
+                }
+            ];
+
+            const randomEvent = EVENTS_POOL[Math.floor(Math.random() * EVENTS_POOL.length)];
+            
+            // Construct the event object for state
+            const eventData = {
+                type: randomEvent.type,
+                title: randomEvent.title,
+                desc: randomEvent.desc,
+                effect: () => {
                     const newPlayers = [...players];
-                    const idx = newPlayers.findIndex(p => p.id === player.id);
-                    newPlayers[idx].pos = Math.min(BOARD_SIZE, newPlayers[idx].pos + 3);
-                    addLog(`😇 Uncle Mike moved ${player.name} forward 3 spaces!`);
+                    const logMsg = randomEvent.execute(newPlayers);
+                    addLog(logMsg);
                     setPlayers(newPlayers);
-                  }
-                };
-            } else if (roll < 0.5) {
-                // Bad Marty (Bad)
-                eventData = {
-                  type: 'bad', title: 'Bad Marty', desc: 'Bad Marty touched the TV remote!',
-                  effect: () => {
-                    const newPlayers = [...players];
-                    const idx = newPlayers.findIndex(p => p.id === player.id);
-                    newPlayers[idx].pos = Math.max(0, newPlayers[idx].pos - 3);
-                    addLog(`😈 Bad Marty pushed ${player.name} back 3 spaces!`);
-                    setPlayers(newPlayers);
-                  }
-                };
-            } else if (roll < 0.75) {
-                // Elder Zack Fight (New Bad)
-                 eventData = {
-                  type: 'bad', title: 'Zack & Guy Fight!', desc: 'Elder Zack and Uncle Guy are fighting on the lawn!',
-                  effect: () => {
-                    const newPlayers = [...players];
-                    const idx = newPlayers.findIndex(p => p.id === player.id);
-                    newPlayers[idx].pos = Math.max(0, newPlayers[idx].pos - 2);
-                    addLog(`🥊 Fight broke out! ${player.name} moved back 2 spaces to watch.`);
-                    setPlayers(newPlayers);
-                  }
-                };
-            } else {
-                 // Chance Find (New Good)
-                 eventData = {
-                  type: 'saint', title: 'Chance Found a Dollar', desc: 'Little Chance found money. It\'s a good omen.',
-                  effect: () => {
-                    const newPlayers = [...players];
-                    const idx = newPlayers.findIndex(p => p.id === player.id);
-                    newPlayers[idx].pos = Math.min(BOARD_SIZE, newPlayers[idx].pos + 2);
-                    addLog(`🍀 Chance's good luck moved ${player.name} forward 2 spaces!`);
-                    setPlayers(newPlayers);
-                  }
-                };
-            }
+                }
+            };
 
             setActiveEvent(eventData);
             setPhase(GAME_PHASES.EVENT_TRIGGER);
