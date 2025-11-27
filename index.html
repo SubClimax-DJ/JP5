@@ -597,8 +597,9 @@
           const triggerRandomEvent = (player) => {
             playSound('alert');
             const isGood = Math.random() > 0.5;
+            let eventData = {};
             if (isGood) {
-              setActiveEvent({
+              eventData = {
                 type: 'saint', title: 'The Saint, Uncle Mike', desc: 'Uncle Mike showed up with extra stuffing!',
                 effect: () => {
                   const newPlayers = [...players];
@@ -607,9 +608,9 @@
                   addLog(`😇 Uncle Mike moved ${player.name} forward 3 spaces!`);
                   setPlayers(newPlayers);
                 }
-              });
+              };
             } else {
-              setActiveEvent({
+              eventData = {
                 type: 'bad', title: 'Bad Marty', desc: 'Bad Marty touched the TV remote!',
                 effect: () => {
                   const newPlayers = [...players];
@@ -618,8 +619,9 @@
                   addLog(`😈 Bad Marty pushed ${player.name} back 3 spaces!`);
                   setPlayers(newPlayers);
                 }
-              });
+              };
             }
+            setActiveEvent(eventData);
             setPhase(GAME_PHASES.EVENT_TRIGGER);
           };
 
@@ -791,6 +793,20 @@
                      <iframe width="100%" height="100%" src="https://www.youtube.com/embed/NtMmpMSfA5I?autoplay=1" title="Prebeg Spanks-Giving Intro" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe>
                   </div>
                   <button onClick={() => { setShowIntroVideo(false); SoundEngine.init(); }} className="mt-8 bg-gradient-to-r from-red-600 to-orange-600 text-white font-black text-2xl py-4 px-12 rounded-full shadow-lg hover:scale-105 transition-transform flex items-center gap-2">🍗 LET'S FEAST! (Skip Video)</button>
+                </div>
+              )}
+              
+              {/* --- NEW EVENT MODAL (FIXED BUG) --- */}
+              {activeEvent && phase === GAME_PHASES.EVENT_TRIGGER && (
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                  <div className={`bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl animate-in zoom-in border-4 ${activeEvent.type === 'saint' ? 'border-green-400' : 'border-red-400'}`}>
+                    <div className="text-6xl text-center mb-4">{activeEvent.type === 'saint' ? '😇' : '😈'}</div>
+                    <h3 className={`text-2xl font-black text-center mb-2 ${activeEvent.type === 'saint' ? 'text-green-800' : 'text-red-800'}`}>{activeEvent.title}</h3>
+                    <p className="text-center text-gray-600 font-bold mb-6">{activeEvent.desc}</p>
+                    <button onClick={resolveEvent} className={`w-full py-4 rounded-xl font-black text-white text-xl shadow-lg hover:scale-105 transition-transform ${activeEvent.type === 'saint' ? 'bg-green-500' : 'bg-red-500'}`}>
+                      {activeEvent.type === 'saint' ? 'Bless You!' : 'Oh No!'}
+                    </button>
+                  </div>
                 </div>
               )}
 
