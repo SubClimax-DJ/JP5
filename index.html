@@ -280,6 +280,19 @@
           { id: 'o_jeremy_2', title: 'Jeremy\'s Playlist', desc: 'Jeremy played polka for 3 hours.', effect: 'discard_hand', value: 0, flavor: 'Ears bleeding. Lose hand.' },
           { id: 'o_badgift', title: 'Regifted Dildo', desc: 'Grandma opened the wrong box.', effect: 'move_back', value: 3, flavor: 'Awkward silence. Back 3.' },
           { id: 'o_pissed', title: 'Sparky\'s Revenge', desc: 'The dog pissed on your sleeping bag.', effect: 'discard_hand', value: 0, flavor: 'Soaked. Discard hand.' },
+          // New Offensive Cards
+          { id: 'o_zack_guy', title: 'Front Lawn Brawl', desc: 'Zack & Guy fighting in snow!', effect: 'global_skip', value: 1, flavor: 'Global Stun! Everyone watches.' },
+          { id: 'o_papa_lib', title: 'Bathroom Library', desc: 'Papa has a magazine.', effect: 'skip_turn_2', value: 2, flavor: 'Dad has to shit. Skip 2 turns.' },
+          { id: 'o_marty_krampus', title: 'Krampus Arrives', desc: 'Marty tells an unrelated story.', effect: 'swap_last', value: 0, flavor: 'Swap with last place!' },
+          { id: 'o_theresa_pinch', title: 'Cheek Pincher', desc: 'Aunt Theresa got you.', effect: 'skip_turn', value: 1, flavor: 'Immobilized by love. Skip turn.' },
+          { id: 'o_trevor_saran', title: 'Saran Wrap Trap', desc: 'Trevor strikes with another prank.', effect: 'move_back', value: 3, flavor: 'Clean up! Back 3 spaces.' },
+          { id: 'o_trevor_bucket', title: 'Bucket of Water', desc: 'Balanced on the door.', effect: 'discard_hand', value: 0, flavor: 'Soaked! Discard your hand.' },
+          { id: 'o_ian_lights', title: 'Tangled Lights', desc: 'Ian lied about packing.', effect: 'skip_turn', value: 1, flavor: 'Untangle them! Skip turn.' },
+          { id: 'o_dylan_cookies', title: 'Burnt Cookies', desc: 'Dylan tried to help bake.', effect: 'move_back', value: 3, flavor: 'Fire Dept coming! Back 3.' },
+          { id: 'o_roger_gift', title: 'Re-Packed Gift', desc: 'Uncle Rogers closet found gift.', effect: 'move_back', value: 2, flavor: 'Heavy! Back 2 spaces.' },
+          { id: 'o_copper_emily', title: 'Knocked Over Tree', desc: 'Copper and Emily tail wagging disaster.', effect: 'move_back', value: 4, flavor: 'Timber! Back 4 spaces.' },
+          { id: 'o_kyle_tongue', title: 'Frozen Tongue', desc: 'Kyle licked the pole.', effect: 'swap', value: 0, flavor: 'Stuck! Swap places.' },
+          { id: 'o_ian_shop', title: 'Last Minute Shop', desc: 'Ian forgot Mom.', effect: 'skip_turn', value: 1, flavor: 'Drive him to mall. Skip turn.' },
         ];
 
         const DEFENSIVE_DECK = [
@@ -295,6 +308,17 @@
           { id: 'd_max_2', title: 'Max\'s Hug', desc: 'Max gave a great hug.', effect: 'shield', value: 1, flavor: 'Warm fuzzy feelings.' },
           { id: 'd_papa_2', title: 'Papa\'s Tools', desc: 'Papa fixed your flat tire.', effect: 'move_forward', value: 3, flavor: 'Back on road. +3.' },
           { id: 'd_lala_2', title: 'Lala\'s Feast', desc: 'Lala cooked a feast.', effect: 'draw_card', value: 1, flavor: 'Full belly. Draw card.' },
+          // New Defensive Cards
+          { id: 'd_rosie_flask', title: 'Flask in the Boot', desc: 'Aunt Rosie slipped you her flask.', effect: 'shield', value: 1, flavor: 'Numb the pain. Immune.' },
+          { id: 'd_guy_coffee', title: 'Irish Coffee', desc: 'Grandma spiked it.', effect: 'move_forward', value: 4, flavor: 'Energy of a meth squirrel. +4.' },
+          { id: 'd_anna_gaslight', title: 'Gaslighting', desc: 'Aunt Anna convinced everyone it wasn\'t you.', effect: 'move_forward', value: 3, flavor: 'Crisis averted. +3.' },
+          { id: 'd_max_driver', title: 'Designated Driver', desc: 'Max is the only sober one.', effect: 'shield', value: 1, flavor: 'You hold the keys. You are safe.' },
+          { id: 'd_ava_fav', title: 'The Favorite Child', desc: 'Mom loves Ava best.', effect: 'goto_leader', value: 0, flavor: 'Warp to the leader.' },
+          { id: 'd_lala_stash', title: 'Secret Stash', desc: 'Lala hid the good wine.', effect: 'move_forward', value: 3, flavor: 'Hide in pantry. +3 spaces.' },
+          { id: 'd_papa_nap', title: 'Strategic Nap', desc: 'Papa fell asleep on the couch.', effect: 'move_forward', value: 2, flavor: 'Avoided argument. +2.' },
+          { id: 'd_zane_med', title: 'Medical Support', desc: 'Zane fixed the broken whatever.', effect: 'move_forward', value: 3, flavor: 'Ignore each other. +3.' },
+          { id: 'd_meagan_shield', title: 'Kids Table Shield', desc: 'Meagan saved you a seat.', effect: 'shield', value: 1, flavor: 'Sticky but safe. Immune.' },
+          { id: 'd_max_saint', title: 'Saint Maxwell', desc: 'Max took everything for himself.', effect: 'global_reset_hands', value: 0, flavor: 'Hand Reset!' },
         ];
 
         const DRUNK_CARD = { id: 'special_beer', title: 'Uncle Mike\'s Flask', desc: 'Secret whiskey makes it better.', effect: 'shield', value: 1, flavor: 'Numb the pain.' };
@@ -325,13 +349,11 @@
         const MiniTV = () => {
             const [isOn, setIsOn] = useState(true);
             const [channelIndex, setChannelIndex] = useState(0);
-            
-            // Approximate timestamps for different movie scenes
-            const CHANNELS = [0, 300, 600, 900, 1200, 1500, 1800, 2100];
+            const PLAYLIST_ID = "PLk0wv9A07kR1EfAtNTHlycxbdsX9FZ1Tv";
 
             const changeChannel = () => {
                 SoundEngine.play('channel');
-                setChannelIndex((prev) => (prev + 1) % CHANNELS.length);
+                setChannelIndex((prev) => (prev + 1) % 30); // Cycle through 30 videos
             };
             
             return (
@@ -348,7 +370,7 @@
                             {isOn ? (
                                 <iframe 
                                     className="w-full h-full pointer-events-none"
-                                    src={`https://www.youtube.com/embed/VcEDCokJggU?autoplay=1&mute=1&controls=0&start=${CHANNELS[channelIndex]}&loop=1&playlist=VcEDCokJggU&showinfo=0&modestbranding=1`}
+                                    src={`https://www.youtube.com/embed?listType=playlist&list=${PLAYLIST_ID}&index=${channelIndex}&autoplay=1&mute=1&controls=0&showinfo=0&modestbranding=1`}
                                     title="Christmas Movies" 
                                     frameBorder="0" 
                                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
@@ -771,6 +793,10 @@
                 { type: 'good', title: 'Uncle Bob\'s Wallet', desc: 'You found it in the couch.', execute: (newPlayers) => { const idx = newPlayers.findIndex(p => p.id === player.id); newPlayers[idx].pos = Math.min(BOARD_SIZE, newPlayers[idx].pos + 3); return `🍀 ${player.name} found Uncle Bob's cash. +3 spaces!`; } },
                 { type: 'good', title: 'Grandma\'s Favorite', desc: 'She slipped you a cookie.', execute: (newPlayers) => { const idx = newPlayers.findIndex(p => p.id === player.id); newPlayers[idx].pos = Math.min(BOARD_SIZE, newPlayers[idx].pos + 2); return `👵 ${player.name} is Grandma's favorite! +2 spaces!`; } },
                 { type: 'bad', title: 'Dad\'s Lecture', desc: 'He cornered you about your career.', execute: (newPlayers) => { const idx = newPlayers.findIndex(p => p.id === player.id); newPlayers[idx].pos = Math.max(0, newPlayers[idx].pos - 3); return `👔 Dad talked for hours. ${player.name} moves back 3.`; } },
+                // New Events
+                { type: 'good', title: 'Mike\'s Money', desc: 'She slipped you a $20.', execute: (newPlayers) => { const idx = newPlayers.findIndex(p => p.id === player.id); newPlayers[idx].pos = Math.min(BOARD_SIZE, newPlayers[idx].pos + 3); return `🍀 ${player.name} got Mike's Money! +3 spaces!`; } },
+                { type: 'good', title: 'Found the Booze', desc: 'Found Uncle Guy\'s secret stash.', execute: (newPlayers) => { const idx = newPlayers.findIndex(p => p.id === player.id); newPlayers[idx].pos = Math.min(BOARD_SIZE, newPlayers[idx].pos + 2); return `🍀 ${player.name} found the booze! +2 spaces!`; } },
+                { type: 'bad', title: 'The Ex Called', desc: 'Max\'s crazy ex is on the landline.', execute: (newPlayers) => { const idx = newPlayers.findIndex(p => p.id === player.id); newPlayers[idx].pos = Math.max(0, newPlayers[idx].pos - 3); return `🤬 The Ex Called! ${player.name} moves back 3.`; } },
             ];
             const randomEvent = EVENTS_POOL[Math.floor(Math.random() * EVENTS_POOL.length)];
             const eventData = {
@@ -869,6 +895,10 @@
                   case 'draw_card': let dCard; const isN = Math.random() > 0.5; let nOff = [...offensivePile]; let nDef = [...defensivePile]; if (isN) { if (nOff.length === 0) nOff = shuffleDeck(OFFENSIVE_DECK); dCard = nOff.pop(); setOffensivePile(nOff); } else { if (nDef.length === 0) nDef = shuffleDeck(DEFENSIVE_DECK); dCard = nDef.pop(); setDefensivePile(nDef); } target.cards.push(dCard); addLog(`${target.name} got a card.`); showFloatText(targetId, "+1 Card"); break;
                   case 'goto_leader': let maxP = 0; let maxVal = -1; newPlayers.forEach((p, idx) => { if (p.pos > maxVal && p.pos < BOARD_SIZE) { maxVal = p.pos; maxP = idx; } }); target.pos = maxVal; addLog(`🚕 Uber arrived! ${target.name} warped to the leader!`); showFloatText(targetId, "WARP!"); break;
                   case 'steal_2': let victims = newPlayers.filter(p => p.id !== sourcePlayer.id && p.cards.length > 0); victims = victims.sort(() => 0.5 - Math.random()).slice(0, 2); victims.forEach(v => { const stolen = v.cards.pop(); newPlayers[currentPlayerIdx].cards.push(stolen); addLog(`🖕 ${sourcePlayer.name} stole "${stolen.title}" from ${v.name}!`); showFloatText(v.id, "STOLEN!"); }); if (victims.length === 0) addLog("🖕 No one had cards to steal! Lame."); break;
+                  case 'global_reset_hands': 
+                    newPlayers.forEach(p => { p.cards = []; showFloatText(p.id, "Hand Lost!"); });
+                    addLog("🎅 Saint Maxwell took everyone's toys! All hands reset.");
+                    break;
                 }
               }
             }
